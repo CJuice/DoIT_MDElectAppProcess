@@ -46,12 +46,12 @@ Variable = namedtuple("Variable", "value")
 CSV_BRIDGE = Variable(r"Docs\20180613_Bridge.csv")
 CSV_MDGOV = Variable(r"Docs\20180613_ElectedOfficialsMarylandGovernment.csv")
 CSV_USGOV = Variable(r"Docs\20180613_ElectedOfficialsUSGovernment.csv")
-SQL_BRIDGE = Variable("""CREATE TABLE BRIDGE (
+SQL_BRIDGE_CREATE = Variable("""CREATE TABLE BRIDGE (
                     Row_ID text primary key, 
                     MDDistrict text,
                     USDistrict text                    
                     )""")
-SQL_MDGOV = Variable("""CREATE TABLE MDGOV (
+SQL_MDGOV_CREATE = Variable("""CREATE TABLE MDGOV (
                     District text primary key,
                     State_Senator text,
                     State_Representative_1 text,
@@ -66,7 +66,7 @@ SQL_MDGOV = Variable("""CREATE TABLE MDGOV (
                     Representative_2_Maryland_Manual_Online text,
                     Representative_3_Maryland_Manual_Online text
                     )""")
-SQL_USGOV = Variable("""CREATE TABLE USGOV (
+SQL_USGOV_CREATE = Variable("""CREATE TABLE USGOV (
                     District text primary key,
                     Name integer,
                     US_Representatives text,
@@ -79,61 +79,67 @@ SQL_USGOV = Variable("""CREATE TABLE USGOV (
                     US_Senator_2_Maryland_Manual_Online text,
                     US_Representative_Maryland_Manual_Online text
                     )""")
-SQL_BRIDGE_INSERT = Variable("""INSERT OR IGNORE INTO event VALUES (:row_id, :mddistrict, :usdistrict)""")
-SQL_MDGOV_INSERT = Variable("""INSERT OR IGNORE INTO event VALUES (:district, :state_senator, :state_representative_1, :state_representative_2, :state_representative_3, :state_senator_party, :state_representative_1_party, :state_representative_2_party, :state_representative_3_party, :senator_maryland_manual_online, :representative_1_maryland_manual_online, :representative_2_maryland_manual_online, :representative_3_maryland_manual_online)""")
-SQL_USGOV_INSERT = Variable("""INSERT OR IGNORE INTO event VALUES (:district, :name, :us_representatives, :party, :us_senator_1, :us_senator_1_party, :us_senator_2, :us_senator_2_party, :us_senator_1_maryland_manual_online, :us_senator_2_maryland_manual_online, :us_representative_maryland_manual_online)""")
+SQL_BRIDGE_INSERT = Variable("""INSERT OR IGNORE INTO bridge VALUES (:row_id, :mddistrict, :usdistrict)""")
+SQL_MDGOV_INSERT = Variable("""INSERT OR IGNORE INTO mdgov VALUES (:district, :state_senator, :state_representative_1, :state_representative_2, :state_representative_3, :state_senator_party, :state_representative_1_party, :state_representative_2_party, :state_representative_3_party, :senator_maryland_manual_online, :representative_1_maryland_manual_online, :representative_2_maryland_manual_online, :representative_3_maryland_manual_online)""")
+SQL_USGOV_INSERT = Variable("""INSERT OR IGNORE INTO usgov VALUES (:district, :name, :us_representatives, :party, :us_senator_1, :us_senator_1_party, :us_senator_2, :us_senator_2_party, :us_senator_1_maryland_manual_online, :us_senator_2_maryland_manual_online, :us_representative_maryland_manual_online)""")
 
 # VARIABLES - OTHER
-csv_list = [CSV_BRIDGE, CSV_MDGOV, CSV_USGOV]
-object_types_list = [Bridge_Class, MDGov_Class, USGov_Class]
-csv_object_pairing = dict(zip(csv_list, object_types_list))
-sql_table_commands_list = [SQL_BRIDGE, SQL_MDGOV, SQL_USGOV]
-sql_table_insert_commands_list = [SQL_BRIDGE_INSERT, SQL_MDGOV_INSERT, SQL_USGOV_INSERT]
-csv_insert_command_pairing = dict(zip(csv_list,sql_table_insert_commands_list))
+test_database = r"Docs\testdb.db"
+csv_namedtuples_list = [CSV_BRIDGE, CSV_MDGOV, CSV_USGOV]
+class_types_namedtuples_list = [Bridge_Class, MDGov_Class, USGov_Class]
+csv_classobject_pairing = dict(zip(csv_namedtuples_list, class_types_namedtuples_list))
+sql_create_namedtuples_list = [SQL_BRIDGE_CREATE, SQL_MDGOV_CREATE, SQL_USGOV_CREATE]
+sql_insert_namedtuples_list = [SQL_BRIDGE_INSERT, SQL_MDGOV_INSERT, SQL_USGOV_INSERT]
+csv_sqlinsert_pairing = dict(zip(csv_namedtuples_list, sql_insert_namedtuples_list))
 
 # FUNCTIONS
-def create_database_connection():
-    return sqlite3.connect(database=":memory:")
+def create_database_connection(database):
+    if database == ":memory:":
+        return sqlite3.connect(database=":memory:")
+    else:
+        return sqlite3.connect(database=database)
 def create_database_cursor(connection):
     return connection.cursor()
 def execute_sql_command(connection, cursor, sql_command, parameters_sequence=()):
     cursor.execute(sql_command, parameters_sequence)
-    connection.commit()
     return
 def close_database_connection(connection):
     connection.close()
     return
+def commit_to_database(connection):
+    connection.commit()
+    return
 
 # FUNCTIONALITY
 # Set up SQLite3 in memory database. Establish database tables
-conn = create_database_connection()
+conn = create_database_connection(test_database)
+# conn = create_database_connection(":memory:")
 curs = create_database_cursor(conn)
-for command in sql_table_commands_list:
-    execute_sql_command(connection=conn, cursor=curs, sql_command=command.value)
+for sql_namedtuple in sql_create_namedtuples_list:
+    execute_sql_command(connection=conn, cursor=curs, sql_command=sql_namedtuple.value)
 
-# Access CSV's, store contents as objects
-for csv_namedtuple in csv_list:
-    objects_list = []
-    with open(csv_namedtuple.value, 'r') as file_handler:
-        file_contents_list = [line.strip().split(",") for line in file_handler]
-    header_string_list = file_contents_list.pop(0)
+# Access CSV's, work on each one storing contents as objects and writing to database
+for csv_namedtuple in csv_namedtuples_list:
+    # objects_list = []
+    with open(csv_namedtuple.value, 'r') as csv_file_handler:
+        records_list_list = [(line.strip()).split(",") for line in csv_file_handler]
+    headers_list = records_list_list.pop(0)
     # make appropriate objects
-    for record in file_contents_list:
-        record_list = record
-        record_dictionary = dict(zip(header_string_list, record_list))
-        data_object = csv_object_pairing[csv_namedtuple](record_dictionary)
-        insert_sql = csv_insert_command_pairing[csv_namedtuple]
-        print(insert_sql)
-        print(type(data_object.__dict__))
-        # write CSV's to database
-        #TODO: stopped here. issue with passing dict from builtins call
-        # execute_sql_command(connection=conn, cursor=curs, sql_command=insert_sql, parameters_sequence=data_object.__dict__)
+    for record_list in records_list_list:
+        record_dictionary = dict(zip(headers_list, record_list))
 
+        # create the type of object appropriate to csv being inspected
+        data_object = csv_classobject_pairing[csv_namedtuple](record_dictionary)
+
+        # get the insert sql statement and write CSV's to database
+        insert_sql_namedtuple = csv_sqlinsert_pairing[csv_namedtuple]
+        execute_sql_command(connection=conn, cursor=curs, sql_command=insert_sql_namedtuple.value, parameters_sequence=data_object.__dict__)
 
 # SQL call to database to join tables and make one master dataset for upload
 # Make connection with AGOL
 # Update data in hosted feature layer
 
 
-# Close things out
+# Commit and Close things out
+commit_to_database(conn)
 close_database_connection(conn)
