@@ -10,6 +10,8 @@ record_list_list = []
 record_strings_list = []
 
 # FUNCTIONS
+def reverse_dictionary(dictionary):
+    return {value : key for key, value in dictionary.items()}
 
 # FUNCTIONALITY
 assert os.path.exists(path_master_dataset_csv)
@@ -60,7 +62,7 @@ csv_headers_to_fc_field_names_dict = {"MD_District" : "MD_District",
                                       "US_Representative_Maryland_Manual_Online": "US_Reps_Manual_Online",
                                       "Row_ID": "Row_ID"
                                       }
-fc_field_names_to_csv_headers_dict = {value : key for key, value in csv_headers_to_fc_field_names_dict.items()}
+fc_field_names_to_csv_headers_dict = reverse_dictionary(csv_headers_to_fc_field_names_dict)
 
 # store the index position of each header
 csv_header_index_position_dict = {header : csv_headers_list.index(header) for header in csv_headers_list}
@@ -82,17 +84,24 @@ fc_field_names_index_position_dict = {name : fc_field_names_list.index(name) for
 
 # isolate the fields that have a corresponding header in the csv file
 fc_field_names_matching_header_list = [name for name in fc_field_names_list if name in fc_field_names_to_csv_headers_dict.keys()]
+fc_field_names_matching_header_index_dictionary = reverse_dictionary(dict(enumerate(fc_field_names_matching_header_list)))
+# print(fc_field_names_matching_header_index_dictionary)
+# exit()
 # print(fc_field_names_matching_header_list)
 
 #______________
 # TESTING
-with arcpy.da.SearchCursor(in_table=fc_name, field_names=fc_field_names_matching_header_list) as search_cursor:
-    for row in search_cursor:
-        print(row)
+# with arcpy.da.SearchCursor(in_table=fc_name, field_names=fc_field_names_matching_header_list) as search_cursor:
+#     for row in search_cursor:
+#         row[0]
 #______________
 
 
-# with arcpy.da.UpdateCursor(in_table=fc_name, field_names=fc_field_names_list) as search_cursor:
-#     for row in search_cursor:
-#         current_row_id = row[fc_field_names_index_position_dict["Row_ID"]]
-#         # Use sql query on database to get this row of data
+with arcpy.da.UpdateCursor(in_table=fc_name, field_names=fc_field_names_matching_header_list) as search_cursor:
+    for row in search_cursor:
+        # print(row)
+        current_row_id = row[fc_field_names_matching_header_index_dictionary["Row_ID"]]
+        # print(current_row_id)
+        # Integrate with other script and sse sql query on in memory database to get the data record that matches the row in the feature class
+        # Use the row to update the feature class data
+
