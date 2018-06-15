@@ -79,7 +79,7 @@ except:
     print("Search not successful. Check that .sd file is present and that the username supplie is the owner of the file.")
     exit()
 
-print("Found SD: {}, ID: {} n Uploading and overwriting…".format(agol_sd_item.title, agol_sd_item.id))
+print("Found SD: {}, ID: {} \n Uploading and overwriting…".format(agol_sd_item.title, agol_sd_item.id))
 agol_sd_item.update(data=sd_filename)
 
 print("Overwriting existing feature service…")
