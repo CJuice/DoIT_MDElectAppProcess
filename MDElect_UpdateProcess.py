@@ -8,6 +8,9 @@ from collections import namedtuple
 import sqlite3
 
 def main():
+    #___________________________________________
+    # PART 1
+
     # CLASSES
     class Bridge_Class():
         def __init__(self, data_dict):
@@ -102,7 +105,7 @@ def main():
     SQL_INSERT_BRIDGE = Variable("""INSERT OR IGNORE INTO bridge VALUES (:row_id, :md_district, :us_district)""")
     SQL_INSERT_MDGOV = Variable("""INSERT OR IGNORE INTO mdgov VALUES (:md_district, :state_senator, :state_senator_party, :state_senator_maryland_manual_online, :state_representative_1, :state_representative_1_party, :state_representative_1_maryland_manual_online, :state_representative_2, :state_representative_2_party, :state_representative_2_maryland_manual_online, :state_representative_3,  :state_representative_3_party, :state_representative_3_maryland_manual_online, :governor, :governor_maryland_manual_online, :lt_governor, :lt_governor_maryland_manual_online, :attorney_general, :attorney_general_maryland_manual_online, :comptroller, :comptroller_maryland_manual_online)""")
     SQL_INSERT_USGOV = Variable("""INSERT OR IGNORE INTO usgov VALUES (:us_district, :name, :label, :us_senator_1, :us_senator_1_party, :us_senator_1_maryland_manual_online, :us_senator_2, :us_senator_2_party, :us_senator_2_maryland_manual_online, :us_representatives, :us_representatives_party, :us_representatives_maryland_manual_online)""")
-    SQL_SELECT_OUTPUT_DATA = Variable("""SELECT MDGOV.*, BRIDGE.Row_ID, USGOV.* FROM MDGOV, BRIDGE, USGOV WHERE MDGOV.MD_District = BRIDGE.MD_District AND BRIDGE.US_District = USGOV.US_District""")
+    SQL_SELECT_OUTPUT_DATA = Variable("""SELECT MDGOV.*, USGOV.*, BRIDGE.Row_ID FROM MDGOV, BRIDGE, USGOV WHERE MDGOV.MD_District = BRIDGE.MD_District AND BRIDGE.US_District = USGOV.US_District""")
 
     # VARIABLES - OTHER
     test_database = r"Docs\testdb.db"           # TESTING
@@ -159,10 +162,125 @@ def main():
 
     # SQL call to database to join tables and make one master dataset for upload
     results = execute_sql_command(cursor=curs,sql_command=SQL_SELECT_OUTPUT_DATA.value)
+    # print(type(results))
+    full_data_dictionary = {row[-1] : tuple(row) for row in results}
 
     # SQL Commit and Close things out
     commit_to_database(conn)
     close_database_connection(conn)
+
+
+    # exit()
+
+    #___________________________________________
+    # PART 2
+
+    # Using in memory database, update feature class data
+    # IMPORTS
+    import arcpy
+    import os
+
+    # VARIABLES
+    fc_name = "ElectedOfficials"
+    path_master_dataset_csv = r"E:\DoIT_MDElectAppProcess\Docs\test_sql_pull_data.csv"
+    path_project_gdb = r"E:\DoIT_MDElectAppProcess\Docs\ElectedOfficals\ElectedOfficals.gdb"
+    record_list_list = []
+    record_strings_list = []
+
+    # FUNCTIONS
+    def reverse_dictionary(dictionary):
+        return {value: key for key, value in dictionary.items()}
+
+    # FUNCTIONALITY
+    assert os.path.exists(path_master_dataset_csv)
+    assert os.path.exists(path_project_gdb)
+
+    # Non-Spatial
+    # access the master dataset csv file contents
+    with open(path_master_dataset_csv, 'r') as csv_file_handler:
+        for line in csv_file_handler:
+            record_strings_list.append(line)
+
+    # grab the headers
+    csv_headers_list = ((record_strings_list[0]).strip()).split(",")
+
+    # need a mapping between gis data and csv data
+    csv_headers_to_fc_field_names_dict = {"MD_District": "MD_District",
+                                          "State_Senator": "MD_Senator",
+                                          "State_Senator_Party": "MD_Senator_Party",
+                                          "State_Senator_Maryland_Manual_Online": "MD_Senator_Manual_Online",
+                                          "State_Representative_1": "MD_Representative_1",
+                                          "State_Representative_1_Party": "MD_Rep_1_Party",
+                                          "State_Representative_1_Maryland_Manual_Online": "MD_Rep_1_Manual_Online",
+                                          "State_Representative_2": "MD_Representative_2",
+                                          "State_Representative_2_Party": "MD_Rep_2_Party",
+                                          "State_Representative_2_Maryland_Manual_Online": "MD_Rep_2_Manual_Online",
+                                          "State_Representative_3": "MD_Representative_3",
+                                          "State_Representative_3_Party": "MD_Rep_3_Party",
+                                          "State_Representative_3_Maryland_Manual_Online": "MD_Rep_3_Manual_Online",
+                                          "Governor": "Governor",
+                                          "Governor_Maryland_Manual_Online": "Governor_Manual_Online",
+                                          "Lt_Governor": "Lt_Governor",
+                                          "Lt_Governor_Maryland_Manual_Online": "Lt_Governor_Manual_Online",
+                                          "Attorney_General": "Attorney_General",
+                                          "Attorney_General_Maryland_Manual_Online": "Attorney_General_Manual_Online",
+                                          "Comptroller": "Comptroller",
+                                          "Comptroller_Maryland_Manual_Online": "Comptroller_Manual_Online",
+                                          "US_District": "US_District",
+                                          "Name": "Name",
+                                          "Label": "Label",
+                                          "US_Senator_1": "US_Senator_1",
+                                          "US_Senator_1_Party": "US_Senator_1_Party",
+                                          "US_Senator_1_Maryland_Manual_Online": "US_Senator_1_Manual_Online",
+                                          "US_Senator_2": "US_Senator_2",
+                                          "US_Senator_2_Party": "US_Senator_2_Party",
+                                          "US_Senator_2_Maryland_Manual_Online": "US_Senator_2_Manual_Online",
+                                          "US_Representatives": "US_Representatives",
+                                          "US_Representatives_Party": "US_Representatives_Party",
+                                          "US_Representative_Maryland_Manual_Online": "US_Reps_Manual_Online",
+                                          "Row_ID": "Row_ID"
+                                          }
+    fc_field_names_to_csv_headers_dict = reverse_dictionary(csv_headers_to_fc_field_names_dict)
+
+    # store the index position of each header
+    csv_header_index_position_dict = {header: csv_headers_list.index(header) for header in csv_headers_list}
+
+    # Spatial
+    # access feature class
+    arcpy.env.workspace = path_project_gdb
+
+    fc_fields = arcpy.ListFields(fc_name)
+
+    # grab the field names
+    fc_field_names_list = [(fc_field.name).strip() for fc_field in fc_fields]
+
+    # store the index position of each name
+    fc_field_names_index_position_dict = {name: fc_field_names_list.index(name) for name in fc_field_names_list}
+
+
+    # isolate the fields that have a corresponding header in the csv file
+    fc_field_names_matching_header_list = [name for name in fc_field_names_list if
+                                           name in fc_field_names_to_csv_headers_dict.keys()]
+    fc_field_names_matching_header_index_dictionary = reverse_dictionary(
+        dict(enumerate(fc_field_names_matching_header_list)))
+
+
+    # ______________
+    # TESTING
+    # with arcpy.da.SearchCursor(in_table=fc_name, field_names=fc_field_names_matching_header_list) as search_cursor:
+    #     for row in search_cursor:
+    #         row[0]
+    # ______________
+
+    with arcpy.da.UpdateCursor(in_table=fc_name, field_names=fc_field_names_matching_header_list) as update_cursor:
+        for row in update_cursor:
+            current_row_id = row[fc_field_names_matching_header_index_dictionary["Row_ID"]]
+            csv_data_for_current_row_id = full_data_dictionary[current_row_id]
+            update_cursor.updateRow(csv_data_for_current_row_id)
+    # After data updated, use feature class to overwrite hosted feature layer by republishing service through arcpro
+
+    #___________________________________________
+    # PART 3
 
     # Update data in hosted feature layer
     # Make connection with AGOL

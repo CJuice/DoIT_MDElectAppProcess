@@ -97,11 +97,12 @@ fc_field_names_matching_header_index_dictionary = reverse_dictionary(dict(enumer
 #______________
 
 
-with arcpy.da.UpdateCursor(in_table=fc_name, field_names=fc_field_names_matching_header_list) as search_cursor:
-    for row in search_cursor:
+with arcpy.da.UpdateCursor(in_table=fc_name, field_names=fc_field_names_matching_header_list) as update_cursor:
+    for row in update_cursor:
         # print(row)
         current_row_id = row[fc_field_names_matching_header_index_dictionary["Row_ID"]]
         # print(current_row_id)
-        # Integrate with other script and sse sql query on in memory database to get the data record that matches the row in the feature class
+        # TODO: Integrate with other script and sse sql query on in memory database to get the data record that matches the row in the feature class
         # Use the row to update the feature class data
+        # After data updated, use feature class to overwrite hosted feature layer by republishing service through arcpro
 
