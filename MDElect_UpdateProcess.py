@@ -247,6 +247,7 @@ def main():
     assert os.path.exists(CSV_PATH_MDGOV.value)
     assert os.path.exists(CSV_PATH_USGOV.value)
     assert os.path.exists(GDB_PATH_ARCPRO_PROJECT.value)
+    assert os.path.exists(SD_FILE_STORAGE_LOCATION.value)
 
     # ___________________________________________
     # PART 1 - Need to build in-memory sqlite3 database and populate from csv files
