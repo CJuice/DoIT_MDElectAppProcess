@@ -345,7 +345,7 @@ def main():
     arcpro_map = arcpro_project.listMaps()[0]  # Note: keep your pro project simple, have only one map in aprx. Process grabs first map.
     arcpy.mp.CreateWebLayerSDDraft(map_or_layers=arcpro_map,
                                    out_sddraft=sd_draft_filename,
-                                   service_name=SD_FEATURE_SERVICE_NAME,
+                                   service_name=SD_FEATURE_SERVICE_NAME.value,
                                    server_type="MY_HOSTED_SERVICES",
                                    service_type="FEATURE_ACCESS",
                                    folder_name="",
@@ -376,7 +376,7 @@ def main():
     # Find the existingSD, update it, publish to overwrite and set sharing and metadata.
     # Must be owned by the account whose credentials this process uses, and named the same
     try:
-        agol_sd_item = gis.content.search("{} AND owner:{}".format(SD_FEATURE_SERVICE_NAME, agol_username),
+        agol_sd_item = gis.content.search("{} AND owner:{}".format(SD_FEATURE_SERVICE_NAME.value, agol_username),
                                           item_type="Service Definition")[0]
     except:
         print(
