@@ -27,12 +27,28 @@ def main():
 
     # CLASSES
     class Bridge_Class():
+        """
+        Bridge table object between US Districts and MD Districts.
+        """
         def __init__(self, data_dict):
+            """
+            Instantiate object and populate with values from data_dictionary.
+
+            :param data_dict:  dictionary of header name key to record value for Bridge csv
+            """
             self.row_id = data_dict["Row_ID"]
             self.md_district = data_dict["MD_District"]
             self.us_district = data_dict["US_District"]
     class MDGov_Class():
+        """
+        MD Government specific elected officials data object.
+        """
         def __init__(self, data_dict):
+            """
+            Instantiate object and populate with values from data_dictionary.
+
+            :param data_dict: dictionary of header name key to record value for MD Districts csv
+            """
             self.md_district = data_dict["MD_District"]
             self.state_senator = data_dict["State_Senator"]
             self.state_senator_party = data_dict["State_Senator_Party"]
@@ -55,7 +71,15 @@ def main():
             self.comptroller = data_dict["Comptroller"]
             self.comptroller_maryland_manual_online = data_dict["Comptroller_Maryland_Manual_Online"]
     class USGov_Class():
+        """
+        US Government specific elected officials data object.
+        """
         def __init__(self, data_dict):
+            """
+            Instantiate object and populate with values from data_dictionary.
+
+            :param data_dict: dictionary of header name key to record value for US Districts csv
+            """
             self.us_district = data_dict["US_District"]
             self.name = data_dict["Name"]
             self.label = data_dict["Label"]
@@ -178,7 +202,7 @@ def main():
     # FUNCTIONS
     def close_database_connection(connection):
         """
-        Close the sqlite3 database connection
+        Close the sqlite3 database connection.
 
         :param connection: sqlite3 connection to be closed
         :return: Nothin
@@ -187,7 +211,7 @@ def main():
         return
     def clean_and_split(line):
         """
-        Strip line string and split on commas into a list
+        Strip line string and split on commas into a list, return list.
 
         :param line: record string from csv dataset
         :return: cleaned and split line as list
@@ -204,7 +228,7 @@ def main():
         return
     def create_database_connection(database):
         """
-        Establish sqlite3 database connection
+        Establish sqlite3 database connection and return connection.
 
         :param database: database to create
         :return: database connection
@@ -215,7 +239,7 @@ def main():
             return sqlite3.connect(database=database)
     def create_database_cursor(connection):
         """
-        Create cursor for database data access
+        Create cursor for database data access and return cursor.
 
         :param connection: database connection to use
         :return: database cursor
@@ -223,7 +247,7 @@ def main():
         return connection.cursor()
     def execute_sql_command(cursor, sql_command, parameters_sequence=()):
         """
-        Execute a sql command
+        Execute a sql command and return result.
 
         :param cursor: database cursor to be used
         :param sql_command: sql command to be executed
@@ -234,7 +258,7 @@ def main():
         return result
     def reverse_dictionary(dictionary):
         """
-        Swap the key and value, creating new dictionary
+        Swap the key and value, creating new dictionary, and return new dictionary.
         :param dictionary: in dictionary to be reversed
         :return: reversed dictionary
         """
