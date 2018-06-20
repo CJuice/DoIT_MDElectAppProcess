@@ -1,14 +1,27 @@
 """
-DRAFT - Combine data from two csv's and update data in AGOL hosted feature layer with the new combined dataset
-"""
-#TODO: major weakness/pain point, when need to add/revise/delete field etc you have to manually change in multiple spots. Make code more flexible to solve this issue.
+Read data in csv files and create sqlite3 database in-memory, overwrite feature class data using database, and overwrite hosted feature layer on ArcGIS Online.
 
-# IMPORTS
+Process looks for csv files of data on elected officials. The Maryland State Archive agency maintains the elected
+officials data using two tabs in a Google Sheet. We have a process that pulls csv's of the tabs. One tab is MD specific,
+the other is Federal specific. The process takes the data from those csv's and builds and loads tables using sqlite3.
+Due to many-to-many relationships between MD District and US District, a bridge table is necessary. A Bridge csv exists.
+The csv is read and used to create a database table the same as the elected officials data. The database is used to build
+a set of new records. These records, with unique identifier row_id, are used to update/overwrite the attributes in a
+feature class of polygons representinng unique district combination areas. The combination areas are unique combinations
+of the MD Districts and the US Districts layers. An ArcGIS Pro project exists. It contains a feature class of the
+conbinattion polygons. This layer is geometrically identical to the hosted feature layer on ArcGIS Online.
+Once the feature class is updated, the Python API for ArcGIS is used to republish the ArcPro project and overwrite the
+hosted feature layer on ArcGIS Online.
+Author: CJuice
+Date: 20180619
+"""
+#TODO: weakness/pain point, when need to add/revise/delete field etc you have to manually change in multiple spots. Make code more flexible to solve this issue.
+
+# IMPORTS - Some delayed imports exist, for performance improvement
 from collections import namedtuple
-import json
+import configparser
 import os
 import sqlite3
-
 
 def main():
 
@@ -58,15 +71,19 @@ def main():
 
     # VARIABLES - CONSTANTS
     Variable = namedtuple("Variable", "value")
-    CSV_BRIDGE = Variable(r"Docs\20180613_Bridge.csv")
-    CSV_MDGOV = Variable(r"Docs\20180619_ElectedOfficialsMarylandGovernment.csv")
-    CSV_USGOV = Variable(r"Docs\20180619_ElectedOfficialsUSGovernment.csv")
+    ARCGIS_ONLINE_PORTAL = Variable("http://maryland.maps.arcgis.com")
+    ARCPRO_PROJECT_PATH = Variable(r"E:\DoIT_MDElectAppProcess\Docs\ElectedOfficals\ElectedOfficals.aprx")
+    CREDENTIALS_PATH = Variable(r"Docs\credentials.cfg")
+    CSV_PATH_BRIDGE = Variable(r"Docs\20180613_Bridge.csv")
+    CSV_PATH_MDGOV = Variable(r"Docs\20180619_ElectedOfficialsMarylandGovernment.csv")
+    CSV_PATH_USGOV = Variable(r"Docs\20180619_ElectedOfficialsUSGovernment.csv")
+    FC_NAME = Variable("ElectedOfficials")
+    GDB_PATH_ARCPRO_PROJECT = Variable(r"E:\DoIT_MDElectAppProcess\Docs\ElectedOfficals\ElectedOfficals.gdb")
+    SD_FEATURE_SERVICE_NAME = Variable("Elected_Officials")
     SD_FILE_STORAGE_LOCATION = Variable(r"E:\DoIT_MDElectAppProcess\Docs\sd_file_storage")
-    SQL_CREATE_BRIDGE = Variable("""CREATE TABLE BRIDGE (
-                        Row_ID text primary key, 
-                        MD_District text,
-                        US_District text                    
-                        )""")
+    SD_FILENAME_DRAFT = Variable("Elected_Officals.sddraft")
+    SD_FILENAME = Variable("Elected_Officals.sd")
+    SQL_CREATE_BRIDGE = Variable("""CREATE TABLE BRIDGE (Row_ID text primary key, MD_District text, US_District text)""")
     SQL_CREATE_MDGOV = Variable("""CREATE TABLE MDGOV (
                         MD_District text primary key,
                         State_Senator text,
@@ -110,11 +127,7 @@ def main():
     SQL_SELECT_OUTPUT_DATA = Variable("""SELECT MDGOV.*, USGOV.*, BRIDGE.Row_ID FROM MDGOV, BRIDGE, USGOV WHERE MDGOV.MD_District = BRIDGE.MD_District AND BRIDGE.US_District = USGOV.US_District""")
 
     # VARIABLES - OTHER
-    arcpro_project_path = r"E:\DoIT_MDElectAppProcess\Docs\ElectedOfficals\ElectedOfficals.aprx"
-    csv_namedtuples_list = [CSV_BRIDGE, CSV_MDGOV, CSV_USGOV]
     class_types_namedtuples_list = [Bridge_Class, MDGov_Class, USGov_Class]
-    credentials_path = r"Docs\credentials.json"
-    csv_classobject_pairing = dict(zip(csv_namedtuples_list, class_types_namedtuples_list))
     csv_headers_to_fc_field_names_dict = {"MD_District": "MD_District",
                                           "State_Senator": "MD_Senator",
                                           "State_Senator_Party": "MD_Senator_Party",
@@ -150,150 +163,188 @@ def main():
                                           "US_Representative_Maryland_Manual_Online": "US_Reps_Manual_Online",
                                           "Row_ID": "Row_ID"
                                           }
-    fc_name = "ElectedOfficials"
-    path_master_dataset_csv = r"E:\DoIT_MDElectAppProcess\Docs\test_sql_pull_data.csv"      # TESTING
-    path_project_gdb = r"E:\DoIT_MDElectAppProcess\Docs\ElectedOfficals\ElectedOfficals.gdb"
-    portal = "http://maryland.maps.arcgis.com"
-    record_list_list = []
-    record_strings_list = []
+    csv_paths_namedtuples_list = [CSV_PATH_BRIDGE, CSV_PATH_MDGOV, CSV_PATH_USGOV]
+    sd_draft_filename = os.path.join(SD_FILE_STORAGE_LOCATION.value, SD_FILENAME_DRAFT.value)
+    sd_filename = os.path.join(SD_FILE_STORAGE_LOCATION.value, SD_FILENAME.value)
     share_everyone = False
     share_groups = ""
     share_organization = False
-    sd_featureservice_name = "Elected_Officials"
     sql_create_namedtuples_list = [SQL_CREATE_BRIDGE, SQL_CREATE_MDGOV, SQL_CREATE_USGOV]
     sql_insert_namedtuples_list = [SQL_INSERT_BRIDGE, SQL_INSERT_MDGOV, SQL_INSERT_USGOV]
-    test_database = r"Docs\testdb.db"           # TESTING
-        # Dependent Variables - Derived
-    csv_sqlinsert_pairing = dict(zip(csv_namedtuples_list, sql_insert_namedtuples_list))
-    sd_draft_filename = os.path.join(SD_FILE_STORAGE_LOCATION.value, "Elected_Officals.sddraft")
-    sd_filename = os.path.join(SD_FILE_STORAGE_LOCATION.value, "Elected_Officals.sd")
-
-    assert os.path.exists(credentials_path)
-    assert os.path.exists(CSV_BRIDGE.value)
-    assert os.path.exists(CSV_MDGOV.value)
-    assert os.path.exists(CSV_USGOV.value)
-    assert os.path.exists(path_project_gdb)
-
+        # Dependent Variables
+    csv_classobject_pairing = dict(zip(csv_paths_namedtuples_list, class_types_namedtuples_list))
+    csv_sqlinsert_pairing = dict(zip(csv_paths_namedtuples_list, sql_insert_namedtuples_list))
 
     # FUNCTIONS
     def close_database_connection(connection):
+        """
+        Close the sqlite3 database connection
+
+        :param connection: sqlite3 connection to be closed
+        :return: Nothin
+        """
         connection.close()
         return
+    def clean_and_split(line):
+        """
+        Strip line string and split on commas into a list
+
+        :param line: record string from csv dataset
+        :return: cleaned and split line as list
+        """
+        return (line.strip()).split(",")
     def commit_to_database(connection):
+        """
+        Make a commit to sqlite3 database.
+
+        :param connection: sqlite database connection
+        :return: Nothing
+        """
         connection.commit()
         return
     def create_database_connection(database):
+        """
+        Establish sqlite3 database connection
+
+        :param database: database to create
+        :return: database connection
+        """
         if database == ":memory:":
             return sqlite3.connect(database=":memory:")
         else:
             return sqlite3.connect(database=database)
     def create_database_cursor(connection):
+        """
+        Create cursor for database data access
+
+        :param connection: database connection to use
+        :return: database cursor
+        """
         return connection.cursor()
     def execute_sql_command(cursor, sql_command, parameters_sequence=()):
+        """
+        Execute a sql command
+
+        :param cursor: database cursor to be used
+        :param sql_command: sql command to be executed
+        :param parameters_sequence: parameters for substitution in sql string placeholder
+        :return: results of query
+        """
         result = cursor.execute(sql_command, parameters_sequence)
         return result
     def reverse_dictionary(dictionary):
+        """
+        Swap the key and value, creating new dictionary
+        :param dictionary: in dictionary to be reversed
+        :return: reversed dictionary
+        """
         return {value: key for key, value in dictionary.items()}
 
     # FUNCTIONALITY
+    # Assert that core files are present.
+    assert os.path.exists(CREDENTIALS_PATH.value)
+    assert os.path.exists(CSV_PATH_BRIDGE.value)
+    assert os.path.exists(CSV_PATH_MDGOV.value)
+    assert os.path.exists(CSV_PATH_USGOV.value)
+    assert os.path.exists(GDB_PATH_ARCPRO_PROJECT.value)
+
     # ___________________________________________
-    # PART 1 - Build in-memory sqlite3 database and populate from csv files
+    # PART 1 - Need to build in-memory sqlite3 database and populate from csv files
     # ___________________________________________
 
-    # Set up SQLite3 in memory database. Establish database tables
-    # conn = create_database_connection(test_database)                  # TESTING
+    # Need SQLite3 in memory database and tables for each csv contents.
     conn = create_database_connection(":memory:")
     curs = create_database_cursor(conn)
     for sql_namedtuple in sql_create_namedtuples_list:
         execute_sql_command(cursor=curs, sql_command=sql_namedtuple.value)
 
-    # Access CSV's, work on each one storing contents as objects and writing to database
-    for csv_namedtuple in csv_namedtuples_list:
-        with open(csv_namedtuple.value, 'r') as csv_file_handler:
-            records_list_list = [(line.strip()).split(",") for line in csv_file_handler]
-        headers_list = records_list_list.pop(0)
+    # Need to access CSV's, work on each one storing contents as objects and writing to database
+    for csv_path_namedtuple in csv_paths_namedtuples_list:
+        with open(csv_path_namedtuple.value, 'r') as csv_file_handler:
+            records_list_list = [(clean_and_split(line=line)) for line in csv_file_handler]
 
+        # Need the headers from csv. Remove them from list so don't have to skip that row in the for loop below
+        headers_list = records_list_list.pop(0)
         for record_list in records_list_list:
             record_dictionary = dict(zip(headers_list, record_list))
 
-            # create the type of object appropriate to csv being inspected
-            data_object = csv_classobject_pairing[csv_namedtuple](record_dictionary)
+            # Need to create the type of class object (Bridge, MDGov, USGov) appropriate to csv being inspected
+            data_object = csv_classobject_pairing[csv_path_namedtuple](record_dictionary)
 
-            # get the appropriate insert sql statement and write CSV's to appropriate database table
-            insert_sql_namedtuple = csv_sqlinsert_pairing[csv_namedtuple]
+            # Need to get the appropriate insert sql statement and write CSV's to appropriate database table
+            insert_sql_namedtuple = csv_sqlinsert_pairing[csv_path_namedtuple]
             execute_sql_command(cursor=curs,
                                 sql_command=insert_sql_namedtuple.value,
                                 parameters_sequence=data_object.__dict__)
 
-    # SQL call to database to join tables and make one master dataset for upload
-    results = execute_sql_command(cursor=curs,sql_command=SQL_SELECT_OUTPUT_DATA.value)
-    headers_master_dataset = tuple([desc_tup[0] for desc_tup in curs.description])
-    full_data_dictionary_from_csv_data = {row[-1] : tuple(row) for row in results}
+    # Need to make call to database to join tables and create one master dataset for overwrite/upload use
+    query_results = execute_sql_command(cursor=curs,sql_command=SQL_SELECT_OUTPUT_DATA.value)
+    full_data_dictionary_from_csv_data = {row[-1] : tuple(row) for row in query_results}
 
-    # SQL Commit and Close things out
+    # SQL Commit and Close out
     commit_to_database(conn)
     close_database_connection(conn)
 
-
     #___________________________________________
-    # PART 2 - Access feature class and update using data from in-memory database master query results from Step 1
+    # PART 2 - Need to access feature class and update using data from in-memory database master query results from Step 1
     #___________________________________________
 
     # SPATIAL
-    # access feature class
+    # Need access to the feature class
     import arcpy        # Delayed import for performance
-    arcpy.env.workspace = path_project_gdb
-    fc_fields = arcpy.ListFields(fc_name)
+    arcpy.env.workspace = GDB_PATH_ARCPRO_PROJECT.value
 
-    # grab the field names
-    fc_field_names_list = [(fc_field.name).strip() for fc_field in fc_fields]
+    # Need the fc field names
+    fc_fields = arcpy.ListFields(FC_NAME.value)
+    fc_field_names_list = [(field.name).strip() for field in fc_fields]
 
-    # reverse the header mapping between gis data and csv data.
-    # TODO: May be able to reverse hardcoded variable and eliminate this step
+    # Need to reverse the header mapping between gis data and csv data. Originally created opposite to end need, meh.
     fc_field_names_to_csv_headers_dict = reverse_dictionary(csv_headers_to_fc_field_names_dict)
 
-    # Isolate the fc fields that have a corresponding header in the csv file. Excluding spatial fields like ObjectID and Shape
-    fc_field_names_matching_header_list = [field_name for field_name in fc_field_names_list if
-                                           field_name in fc_field_names_to_csv_headers_dict.keys()]
+    # Need to excludes spatial fields like ObjectID and Shape. Isolate the fc fields, whose field names have a corresponding header in the csv file.
+    fc_field_names_matching_header_list = [name for name in fc_field_names_list if
+                                           name in fc_field_names_to_csv_headers_dict.keys()]
 
-    # Build dictionary of header keys with their index position values
-    fc_field_names_matching_header_index_dictionary = reverse_dictionary(
+    # Need index position of matching, but after isolating non-spatial fields need new index positions.
+    #   Build dictionary of header keys with their 'new' index position values
+    fc_field_names_matching_csv_header__index_dictionary = reverse_dictionary(
         dict(enumerate(fc_field_names_matching_header_list)))
 
-    with arcpy.da.UpdateCursor(in_table=fc_name, field_names=fc_field_names_matching_header_list) as update_cursor:
+    # Need to step through every feature class row and update the data with data from csv.
+    with arcpy.da.UpdateCursor(in_table=FC_NAME.value, field_names=fc_field_names_matching_header_list) as update_cursor:
         for row in update_cursor:
+
             # Use header index dictionary to supply index position of row_id in modified pull (no spatial fields)
-            current_row_id = row[fc_field_names_matching_header_index_dictionary["Row_ID"]]
+            current_row_id = row[fc_field_names_matching_csv_header__index_dictionary["Row_ID"]]
+
             # use the current row_id to get the correct record of data from the updated csv data in the in-memory database
             csv_data_for_current_row_id = full_data_dictionary_from_csv_data[current_row_id]
+
             # use the new record to replace the existing fc row
             update_cursor.updateRow(csv_data_for_current_row_id)
 
 
     #___________________________________________
-    # PART 3 - Overwrite arcgis online hosted feature layer using republishing from arcpro project.
-    # From example on ArcGIS for Python API. See resources below.
+    # PART 3 - Need to wverwrite arcgis online hosted feature layer using republishing from ArcPro project.
+    # Taken from example on ArcGIS for Python API. See resources below.
     # https://www.esri.com/arcgis-blog/products/api-python/analytics/updating-your-hosted-feature-services-with-arcgis-pro-and-the-arcgis-api-for-python/
-    # https://esri.github.io/arcgis-python-api/apidoc/html/index.html
     #___________________________________________
 
     from arcgis.gis import GIS          # Delayed import for performance
 
-    # Gather credentials
-    with open(credentials_path, 'r') as file_handler:
-        file_contents = file_handler.read()
-    credentials_json = json.loads(file_contents)
-    agol_username = credentials_json["username"]
-    agol_password = credentials_json["password"]
+    # Need credentials from config file
+    config = configparser.ConfigParser()
+    config.read(filenames=CREDENTIALS_PATH.value)
+    agol_username = config['DEFAULT']["username"]
+    agol_password = config['DEFAULT']["password"]
 
-    # Create a new SDDraft and stage to SD
-    print("Creating SD file")
+    # Need a new SDDraft and to stage it to SD
     arcpy.env.overwriteOutput = True
-    project = arcpy.mp.ArcGISProject(aprx_path=arcpro_project_path)
-    map = project.listMaps()[0]  # Keep it simple, have only one map in aprx. Process grabs first map.
-    arcpy.mp.CreateWebLayerSDDraft(map_or_layers=map,
+    arcpro_project = arcpy.mp.ArcGISProject(aprx_path=ARCPRO_PROJECT_PATH.value)
+    arcpro_map = arcpro_project.listMaps()[0]  # Note: keep your pro project simple, have only one map in aprx. Process grabs first map.
+    arcpy.mp.CreateWebLayerSDDraft(map_or_layers=arcpro_map,
                                    out_sddraft=sd_draft_filename,
-                                   service_name=sd_featureservice_name,
+                                   service_name=SD_FEATURE_SERVICE_NAME,
                                    server_type="MY_HOSTED_SERVICES",
                                    service_type="FEATURE_ACCESS",
                                    folder_name="",
@@ -310,9 +361,8 @@ def main():
     arcpy.StageService_server(in_service_definition_draft=sd_draft_filename,
                               out_service_definition=sd_filename)
 
-    # Make connection with AGOL
-    print("Connecting to {}".format(portal))
-    gis = GIS(url=portal,
+    # Need connection with AGOL
+    gis = GIS(url=ARCGIS_ONLINE_PORTAL.value,
               username=agol_username,
               password=agol_password,
               key_file=None,
@@ -324,26 +374,18 @@ def main():
 
     # Find the existingSD, update it, publish to overwrite and set sharing and metadata.
     # Must be owned by the account whose credentials this process uses, and named the same
-    print("Search for original service definition file (.sd) on portal…")
     try:
-        agol_sd_item = gis.content.search("{} AND owner:{}".format(sd_featureservice_name, agol_username),
+        agol_sd_item = gis.content.search("{} AND owner:{}".format(SD_FEATURE_SERVICE_NAME, agol_username),
                                           item_type="Service Definition")[0]
     except:
         print(
-            "Search not successful. Check that .sd file is present and named identically, and that the account credentials supplied are for the owner of the sd file.")
+            "Search for .sd file not successful. Check that .sd file is present and named identically, and that the account credentials supplied are for the owner of the .sd file.")
         exit()
 
-    print("Found SD: {}, ID: {} \n Uploading and overwriting…".format(agol_sd_item.title, agol_sd_item.id))
     agol_sd_item.update(data=sd_filename)
-
-    print("Overwriting existing feature service…")
     feature_service = agol_sd_item.publish(overwrite=True)
-
     if share_organization or share_everyone or share_groups:
-        print("Setting sharing options…")
         feature_service.share(org=share_organization, everyone=share_everyone, groups=share_groups)
-
-    print("Finished updating: {} – ID: {}".format(feature_service.title, feature_service.id))
 
 if __name__ == "__main__":
     main()
