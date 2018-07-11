@@ -372,7 +372,7 @@ def main():
                                    service_name=SD_FEATURE_SERVICE_NAME.value,
                                    server_type="MY_HOSTED_SERVICES",
                                    service_type="FEATURE_ACCESS",
-                                   folder_name="",
+                                   folder_name="MD Elect",
                                    overwrite_existing_service=True,
                                    copy_data_to_server=True,
                                    enable_editing=False,
@@ -400,8 +400,12 @@ def main():
     # Find the existingSD, update it, publish to overwrite and set sharing and metadata.
     # Must be owned by the account whose credentials this process uses, and named the same
     try:
-        agol_sd_item = gis.content.search("{} AND owner:{}".format(SD_FEATURE_SERVICE_NAME.value, agol_username),
+        # Ran no issues from local environment.
+        agol_sd_item = gis.content.search(query="{} AND owner:{}".format(SD_FEATURE_SERVICE_NAME.value, agol_username),
                                           item_type="Service Definition")[0]
+        # After encountered error when deployed to server, found https://community.esri.com/thread/166663
+        # agol_sd_item = gis.content.search(query="title:" + SD_FEATURE_SERVICE_NAME.value + " AND owner: " + agol_username,
+        #                                   item_type="Service Definition")[0]
     except:
         print(
             "Search for .sd file not successful. Check that .sd file is present and named identically, and that the account credentials supplied are for the owner of the .sd file.")
