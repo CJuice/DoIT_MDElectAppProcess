@@ -1,4 +1,5 @@
-*Docs/
-*idea/
+
+Docs/*
+.idea/*
 *.sd
 *.sddraft

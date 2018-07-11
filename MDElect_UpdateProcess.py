@@ -9,7 +9,7 @@ The csv is read and used to create a database table the same as the elected offi
 a set of new records. These records, with unique identifier row_id, are used to update/overwrite the attributes in a
 feature class of polygons representinng unique district combination areas. The combination areas are unique combinations
 of the MD Districts and the US Districts layers. An ArcGIS Pro project exists. It contains a feature class of the
-conbinattion polygons. This layer is geometrically identical to the hosted feature layer on ArcGIS Online.
+conbination polygons. This layer is geometrically identical to the hosted feature layer on ArcGIS Online.
 Once the feature class is updated, the Python API for ArcGIS is used to republish the ArcPro project and overwrite the
 hosted feature layer on ArcGIS Online.
 Author: CJuice
@@ -95,7 +95,7 @@ def main():
 
     # VARIABLES - CONSTANTS
     Variable = namedtuple("Variable", "value")
-    ARCGIS_ONLINE_PORTAL = Variable("http://maryland.maps.arcgis.com")
+    ARCGIS_ONLINE_PORTAL = Variable("https://maryland.maps.arcgis.com")
     ARCPRO_PROJECT_PATH = Variable(r"E:\DoIT_MDElectAppProcess\Docs\ElectedOfficals\ElectedOfficals.aprx")
     CREDENTIALS_PATH = Variable(r"Docs\credentials.cfg")
     CSV_PATH_BRIDGE = Variable(r"Docs\20180613_Bridge.csv")
