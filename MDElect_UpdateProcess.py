@@ -17,13 +17,12 @@ Date: 20180619
 """
 #TODO: weakness/pain point, when need to add/revise/delete field etc you have to manually change in multiple spots. Make code more flexible to solve this issue.
 
-# IMPORTS - Some delayed imports exist, for performance improvement
-from collections import namedtuple
-import configparser
-import os
-import sqlite3
-
 def main():
+    # IMPORTS - Some delayed imports exist, for performance improvement
+    from collections import namedtuple
+    import configparser
+    import os
+    import sqlite3
 
     # CLASSES
     class Bridge_Class():
@@ -93,22 +92,23 @@ def main():
             self.us_representatives_party = data_dict["US_Representatives_Party"]
             self.us_representatives_maryland_manual_online = data_dict["US_Representatives_Maryland_Manual_Online"]
 
+    CONSTANT = namedtuple("CONSTANT", "value")
     # VARIABLES - CONSTANTS
-    Variable = namedtuple("Variable", "value")
-    ARCGIS_ONLINE_PORTAL = Variable("https://maryland.maps.arcgis.com")
-    ARCPRO_PROJECT_PATH = Variable(r"E:\DoIT_MDElectAppProcess\Docs\ElectedOfficals\ElectedOfficals.aprx")
-    CREDENTIALS_PATH = Variable(r"Docs\credentials.cfg")
-    CSV_PATH_BRIDGE = Variable(r"Docs\20180613_Bridge.csv")
-    CSV_PATH_MDGOV = Variable(r"Docs\20180619_ElectedOfficialsMarylandGovernment.csv")
-    CSV_PATH_USGOV = Variable(r"Docs\20180619_ElectedOfficialsUSGovernment.csv")
-    FC_NAME = Variable("ElectedOfficials")
-    GDB_PATH_ARCPRO_PROJECT = Variable(r"E:\DoIT_MDElectAppProcess\Docs\ElectedOfficals\ElectedOfficals.gdb")
-    SD_FEATURE_SERVICE_NAME = Variable("Elected_Officials")
-    SD_FILE_STORAGE_LOCATION = Variable(r"E:\DoIT_MDElectAppProcess\Docs\sd_file_storage")
-    SD_FILENAME_DRAFT = Variable("Elected_Officals.sddraft")
-    SD_FILENAME = Variable("Elected_Officals.sd")
-    SQL_CREATE_BRIDGE = Variable("""CREATE TABLE BRIDGE (Row_ID text primary key, MD_District text, US_District text)""")
-    SQL_CREATE_MDGOV = Variable("""CREATE TABLE MDGOV (
+    _ROOT_PROJECT_PATH = CONSTANT(value=os.path.dirname(__file__))
+    ARCGIS_ONLINE_PORTAL = CONSTANT("https://maryland.maps.arcgis.com")
+    ARCPRO_PROJECT_PATH = CONSTANT(os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\ElectedOfficals\ElectedOfficals.aprx"))
+    CREDENTIALS_PATH = CONSTANT(os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\credentials.cfg"))
+    CSV_PATH_BRIDGE = CONSTANT(os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\20180613_Bridge.csv"))
+    CSV_PATH_MDGOV = CONSTANT(os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\20180619_ElectedOfficialsMarylandGovernment.csv"))
+    CSV_PATH_USGOV = CONSTANT(os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\20180619_ElectedOfficialsUSGovernment.csv"))
+    FC_NAME = CONSTANT("ElectedOfficials")
+    GDB_PATH_ARCPRO_PROJECT = CONSTANT(os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\ElectedOfficals\ElectedOfficals.gdb"))
+    SD_FEATURE_SERVICE_NAME = CONSTANT("Elected_Officials")
+    SD_FILE_STORAGE_LOCATION = CONSTANT(os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\sd_file_storage"))
+    SD_FILENAME_DRAFT = CONSTANT("Elected_Officals.sddraft")
+    SD_FILENAME = CONSTANT("Elected_Officals.sd")
+    SQL_CREATE_BRIDGE = CONSTANT("""CREATE TABLE BRIDGE (Row_ID text primary key, MD_District text, US_District text)""")
+    SQL_CREATE_MDGOV = CONSTANT("""CREATE TABLE MDGOV (
                         MD_District text primary key,
                         State_Senator text,
                         State_Senator_Party text,
@@ -131,7 +131,7 @@ def main():
                         Comptroller text,
                         Comptroller_Maryland_Manual_Online text
                         )""")
-    SQL_CREATE_USGOV = Variable("""CREATE TABLE USGOV (
+    SQL_CREATE_USGOV = CONSTANT("""CREATE TABLE USGOV (
                         US_District text primary key,
                         Name integer,
                         Label text,
@@ -145,10 +145,10 @@ def main():
                         US_Representatives_Party text,
                         US_Representative_Maryland_Manual_Online text
                         )""")
-    SQL_INSERT_BRIDGE = Variable("""INSERT OR IGNORE INTO bridge VALUES (:row_id, :md_district, :us_district)""")
-    SQL_INSERT_MDGOV = Variable("""INSERT OR IGNORE INTO mdgov VALUES (:md_district, :state_senator, :state_senator_party, :state_senator_maryland_manual_online, :state_representative_1, :state_representative_1_party, :state_representative_1_maryland_manual_online, :state_representative_2, :state_representative_2_party, :state_representative_2_maryland_manual_online, :state_representative_3,  :state_representative_3_party, :state_representative_3_maryland_manual_online, :governor, :governor_maryland_manual_online, :lt_governor, :lt_governor_maryland_manual_online, :attorney_general, :attorney_general_maryland_manual_online, :comptroller, :comptroller_maryland_manual_online)""")
-    SQL_INSERT_USGOV = Variable("""INSERT OR IGNORE INTO usgov VALUES (:us_district, :name, :label, :us_senator_1, :us_senator_1_party, :us_senator_1_maryland_manual_online, :us_senator_2, :us_senator_2_party, :us_senator_2_maryland_manual_online, :us_representatives, :us_representatives_party, :us_representatives_maryland_manual_online)""")
-    SQL_SELECT_OUTPUT_DATA = Variable("""SELECT MDGOV.*, USGOV.*, BRIDGE.Row_ID FROM MDGOV, BRIDGE, USGOV WHERE MDGOV.MD_District = BRIDGE.MD_District AND BRIDGE.US_District = USGOV.US_District""")
+    SQL_INSERT_BRIDGE = CONSTANT("""INSERT OR IGNORE INTO bridge VALUES (:row_id, :md_district, :us_district)""")
+    SQL_INSERT_MDGOV = CONSTANT("""INSERT OR IGNORE INTO mdgov VALUES (:md_district, :state_senator, :state_senator_party, :state_senator_maryland_manual_online, :state_representative_1, :state_representative_1_party, :state_representative_1_maryland_manual_online, :state_representative_2, :state_representative_2_party, :state_representative_2_maryland_manual_online, :state_representative_3,  :state_representative_3_party, :state_representative_3_maryland_manual_online, :governor, :governor_maryland_manual_online, :lt_governor, :lt_governor_maryland_manual_online, :attorney_general, :attorney_general_maryland_manual_online, :comptroller, :comptroller_maryland_manual_online)""")
+    SQL_INSERT_USGOV = CONSTANT("""INSERT OR IGNORE INTO usgov VALUES (:us_district, :name, :label, :us_senator_1, :us_senator_1_party, :us_senator_1_maryland_manual_online, :us_senator_2, :us_senator_2_party, :us_senator_2_maryland_manual_online, :us_representatives, :us_representatives_party, :us_representatives_maryland_manual_online)""")
+    SQL_SELECT_OUTPUT_DATA = CONSTANT("""SELECT MDGOV.*, USGOV.*, BRIDGE.Row_ID FROM MDGOV, BRIDGE, USGOV WHERE MDGOV.MD_District = BRIDGE.MD_District AND BRIDGE.US_District = USGOV.US_District""")
 
     # VARIABLES - OTHER
     class_types_namedtuples_list = [Bridge_Class, MDGov_Class, USGov_Class]
