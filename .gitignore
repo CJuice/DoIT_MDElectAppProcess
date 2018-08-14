@@ -3,3 +3,5 @@ Docs/*
 .idea/*
 *.sd
 *.sddraft
+InheritancePractice.py
+*.pyc
