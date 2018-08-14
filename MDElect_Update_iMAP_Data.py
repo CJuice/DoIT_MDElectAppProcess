@@ -1,3 +1,7 @@
+"""
+TODO
+
+"""
 # access the csv files generated from the google spreadsheet with tabs of US and Maryland election data
 # read the data
 # access the sde feature class to be updated
@@ -99,13 +103,13 @@ def main():
 
     # FUNCTIONALITY
         # make sure the required files are real/available
-    assert(os.path.exists(myvars.CSV_MARYLAND_GOVERNMENT.value))
-    assert(os.path.exists(myvars.CSV_US_GOVERNMENT.value))
+    assert(os.path.exists(myvars.CSV_PATH_MDGOV.value))
+    assert(os.path.exists(myvars.CSV_PATH_USGOV.value))
     assert(os.path.exists(myvars.SDE_CONNECTION_FILE.value))
 
         # make data in csv files available in a memory efficient way
-    line_generator_Maryland = mycls.Util_Class.create_file_generator(myvars.CSV_MARYLAND_GOVERNMENT.value)
-    line_generator_US = mycls.Util_Class.create_file_generator(myvars.CSV_US_GOVERNMENT.value)
+    line_generator_Maryland = mycls.Util_Class.create_file_generator(myvars.CSV_PATH_MDGOV.value)
+    line_generator_US = mycls.Util_Class.create_file_generator(myvars.CSV_PATH_USGOV.value)
 
     for line in line_generator_Maryland:
         ls = line.split(",")
@@ -119,11 +123,11 @@ def main():
     arcpy.env.overwriteOutput = True
 
     # Set GIS workspace
-    districts_fd = mycls.Util_Class.clean_url_slashes(os.path.join(myvars._ROOT_PROJECT_PATH.value, myvars.SDE_CONNECTION_FILE.value, myvars.FEATURE_DATASET_NAME.value))
+    districts_fd = mycls.Util_Class.clean_url_slashes(os.path.join(myvars._ROOT_PROJECT_PATH.value, myvars.SDE_CONNECTION_FILE.value, myvars.FEATURE_DATASET_NAME_SDE.value))
     arcpy.env.workspace = districts_fd
 
-    md_fields_obj = arcpy.ListFields(dataset=myvars.MD_DISTRICTS_FC_NAME.value)
-    us_fields_obj = arcpy.ListFields(dataset=myvars.US_DISTRICTS_FC_NAME.value)
+    md_fields_obj = arcpy.ListFields(dataset=myvars.MD_DISTRICTS_SDE_FC_NAME.value)
+    us_fields_obj = arcpy.ListFields(dataset=myvars.US_DISTRICTS_SDE_FC_NAME.value)
     md_fc_field_names = [(field.name).strip() for field in md_fields_obj if "Shape" not in field.name and "ID" not in field.name]
     us_fc_field_names = [(field.name).strip() for field in us_fields_obj if "Shape" not in field.name and "ID" not in field.name]
     md_current_district_index = md_fc_field_names.index("DISTRICT")
@@ -137,11 +141,11 @@ def main():
     # print(usheaders)
     # print(us_fc_field_names)
 
-    md_fc_field_names_to_csv_headers_dict = mycls.Util_Class.reverse_dictionary(myvars.md_csv_headers_to_fc_field_names_dict)
-    us_fc_field_names_to_csv_headers_dict = mycls.Util_Class.reverse_dictionary(myvars.us_csv_headers_to_fc_field_names_dict)
+    md_fc_field_names_to_csv_headers_dict = mycls.Util_Class.reverse_dictionary(myvars.md_csv_headers_to_sde_fc_field_names_dict)
+    us_fc_field_names_to_csv_headers_dict = mycls.Util_Class.reverse_dictionary(myvars.us_csv_headers_to_sde_fc_field_names_dict)
 
     # establish cursor on each feature class
-    with arcpy.da.UpdateCursor(in_table=myvars.MD_DISTRICTS_FC_NAME.value, field_names=myvars.md_fc_districts_field_list) as cursor:
+    with arcpy.da.UpdateCursor(in_table=myvars.MD_DISTRICTS_SDE_FC_NAME.value, field_names=myvars.md_sde_fc_districts_field_list) as cursor:
 
         for row in cursor:
             current_district = row[md_current_district_index]

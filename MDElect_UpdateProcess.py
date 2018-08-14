@@ -1,4 +1,5 @@
 """
+TODO: REVISE
 Read data in csv files and create sqlite3 database in-memory, overwrite feature class data using database, and overwrite hosted feature layer on ArcGIS Online.
 
 Process looks for csv files of data on elected officials. The Maryland State Archive agency maintains the elected
@@ -325,7 +326,7 @@ def main():
     fc_field_names_list = [(field.name).strip() for field in fc_fields]
 
     # Need to reverse the header mapping between gis data and csv data. Originally created opposite to end need, meh.
-    fc_field_names_to_csv_headers_dict = mdcls.Util_Class.reverse_dictionary(myvars.csv_headers_to_fc_field_names_dict)
+    fc_field_names_to_csv_headers_dict = mdcls.Util_Class.reverse_dictionary(myvars.csv_headers_to_agol_fc_field_names_dict)
 
     # Need to excludes spatial fields like ObjectID and Shape. Isolate the fc fields, whose field names have a corresponding header in the csv file.
     fc_field_names_matching_header_list = [name for name in fc_field_names_list if
