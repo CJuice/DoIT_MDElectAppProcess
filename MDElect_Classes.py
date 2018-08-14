@@ -19,7 +19,15 @@ class Bridge_Class():
 
 class Data_Class():
     # Parent
-    pass
+    def __init__(self, district, rep_1, rep_1_manual, rep_1_party, sen_1, sen_1_manual, sen_1_party):
+        self.district = district
+        self.representative_1 = rep_1
+        self.representative_1_manual = rep_1_manual
+        self.representative_1_party = rep_1_party
+        self.senator_1 = sen_1
+        self.senator_1_md_manual_online = sen_1_manual
+        self.senator_1_party = sen_1_party
+
 
 class MDGov_Class():
     """
@@ -56,7 +64,22 @@ class MDGov_Class():
 
 class MD_Data_Class(Data_Class):
     # Child
-    pass
+    def __init__(self, data_dict):
+        self.representative_2 = data_dict["State_Representative_2"]
+        self.representative_2_md_manual_online = data_dict["State_Representative_2_Maryland_Manual_Online"]
+        self.representative_2_party = data_dict["State_Representative_2_Party"]
+        self.representative_3 = data_dict["State_Representative_3"]
+        self.representative_3_md_manual_online = data_dict["State_Representative_3_Maryland_Manual_Online"]
+        self.representative_3_party = data_dict["State_Representative_3_Party"]
+        super().__init__(district=data_dict["MD_District"],
+                         rep_1=data_dict["State_Representative_1"],
+                         rep_1_manual=data_dict["State_Representative_1_Maryland_Manual_Online"],
+                         rep_1_party=data_dict["State_Representative_1_Party"],
+                         sen_1=data_dict["State_Senator"],
+                         sen_1_manual=data_dict["State_Senator_Maryland_Manual_Online"],
+                         sen_1_party=data_dict["State_Senator_Party"])
+
+
 class USGov_Class():
     """
     US Government specific elected officials data object.
@@ -83,7 +106,19 @@ class USGov_Class():
 
 class US_Data_Class(Data_Class):
     # Child
-    pass
+    def __init__(self, data_dict):
+        self.label = data_dict["Label"]
+        self.name = data_dict["Name"]
+        self.senator_2 = data_dict["US_Senator_2"]
+        self.senator_2_md_manual_online = data_dict["US_Senator_2_Maryland_Manual_Online"]
+        self.senator_2_party = data_dict["US_Senator_2_Party"]
+        super().__init__(district=data_dict["US_District"],
+                         rep_1=data_dict["US_Representatives"],
+                         rep_1_manual=data_dict["US_Representatives_Maryland_Manual_Online"],
+                         rep_1_party=data_dict["US_Representatives_Party"],
+                         sen_1=data_dict["US_Senator_1"],
+                         sen_1_manual=data_dict["US_Senator_1_Maryland_Manual_Online"],
+                         sen_1_party=data_dict["US_Senator_1_Party"])
 
 class Util_Class():
     """
@@ -173,18 +208,23 @@ class Util_Class():
 
     @staticmethod
     def process_csv_data_to_objects(csv_path, object_type, delimeter=","):
-        gen = Util_Class.create_file_generator(csv_path)
-        obj_ls = []
+        line_generator = Util_Class.create_file_generator(csv_path)
+        headers_list = []
+        objects_list = []
         i = 0
-        for line in gen:
+        for line in line_generator:
+            line = line.strip()
+            line_list = line.split(delimeter)
+            data_dict = dict(zip(headers_list,line_list))   # first line through will produce empty dictionary
             if i > 0:
-                ls = line.split(delimeter)
-                new_obj = object_type(ls)
-                obj_ls.append(new_obj)
+                new_obj = object_type(data_dict)
+                objects_list.append(new_obj)
                 i += 1
             else:
+                # capture headers first line through
+                headers_list = line_list
                 i += 1
-        return obj_ls
+        return objects_list
 
     @staticmethod
     def reverse_dictionary(dictionary):

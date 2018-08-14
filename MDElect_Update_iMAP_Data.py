@@ -111,27 +111,34 @@ def main():
     # create data object appropriate to datasource (md/us) and store in list
     # md object creation
 
-    md_data_objects = mycls.Util_Class.process_csv_data_to_objects(csv_path=myvars.CSV_PATH_MDGOV.value, object_type=MDGov)
-    line_generator_Maryland = mycls.Util_Class.create_file_generator(myvars.CSV_PATH_MDGOV.value)
-    md_csv_data_objects = []
-    i = 0
-    for line in line_generator_Maryland:
-        if i > 0:
-            ls = line.split(",")
-        else:
-            i += 1
+    md_data_objects = mycls.Util_Class.process_csv_data_to_objects(csv_path=myvars.CSV_PATH_MDGOV.value, object_type=mycls.MD_Data_Class)
+    us_data_objects = mycls.Util_Class.process_csv_data_to_objects(csv_path=myvars.CSV_PATH_USGOV.value, object_type=mycls.US_Data_Class)
 
-        # us object creation
-    line_generator_US = mycls.Util_Class.create_file_generator(myvars.CSV_PATH_USGOV.value)
-    us_csv_data_objects = []
-    i = 0
-    for line in line_generator_US:
-        if i > 0:
-            ls = line.split(",")
-            # make data object
-            i += 1
-        else:
-            i += 1
+    print(md_data_objects)
+    print(us_data_objects)
+    exit()
+    # line_generator_Maryland = mycls.Util_Class.create_file_generator(myvars.CSV_PATH_MDGOV.value)
+    # md_csv_data_objects = []
+    # i = 0
+    # for line in line_generator_Maryland:
+    #     if i > 0:
+    #         ls = line.split(",")
+    #     else:
+    #         # Need index position of each header stored in dictionary
+    #         i += 1
+    #
+    #     # us object creation
+    # line_generator_US = mycls.Util_Class.create_file_generator(myvars.CSV_PATH_USGOV.value)
+    # us_csv_data_objects = []
+    # i = 0
+    # for line in line_generator_US:
+    #     if i > 0:
+    #         ls = line.split(",")
+    #         # make data object
+    #         i += 1
+    #     else:
+    #         # Need index position of each header stored in dictionary
+    #         i += 1
 
     import arcpy    # Delayed Import
 
