@@ -12,7 +12,7 @@ TODO
 
 def main():
     import os
-    import arcpy
+
     import MDElect_Classes as mycls
     import MDElect_Variables as myvars
     # VARIABLES
@@ -102,22 +102,38 @@ def main():
     #     return {value: key for key, value in dictionary.items()}
 
     # FUNCTIONALITY
-        # make sure the required files are real/available
+    # make sure the required files are real/available
     assert(os.path.exists(myvars.CSV_PATH_MDGOV.value))
     assert(os.path.exists(myvars.CSV_PATH_USGOV.value))
     assert(os.path.exists(myvars.SDE_CONNECTION_FILE.value))
 
-        # make data in csv files available in a memory efficient way
+    # make data in csv files available in a memory efficient way
+    # create data object appropriate to datasource (md/us) and store in list
+    # md object creation
+
+    md_data_objects = mycls.Util_Class.process_csv_data_to_objects(csv_path=myvars.CSV_PATH_MDGOV.value, object_type=MDGov)
     line_generator_Maryland = mycls.Util_Class.create_file_generator(myvars.CSV_PATH_MDGOV.value)
-    line_generator_US = mycls.Util_Class.create_file_generator(myvars.CSV_PATH_USGOV.value)
-
+    md_csv_data_objects = []
+    i = 0
     for line in line_generator_Maryland:
-        ls = line.split(",")
-        break
+        if i > 0:
+            ls = line.split(",")
+        else:
+            i += 1
 
+        # us object creation
+    line_generator_US = mycls.Util_Class.create_file_generator(myvars.CSV_PATH_USGOV.value)
+    us_csv_data_objects = []
+    i = 0
     for line in line_generator_US:
-        ls2 = line.split(",")
-        break
+        if i > 0:
+            ls = line.split(",")
+            # make data object
+            i += 1
+        else:
+            i += 1
+
+    import arcpy    # Delayed Import
 
     # Set overwrite output geo-processing parameter
     arcpy.env.overwriteOutput = True
@@ -150,7 +166,8 @@ def main():
         for row in cursor:
             current_district = row[md_current_district_index]
             print(current_district)
-            print(row)
+            # Get data for current district and update the row
+
 
 
 if __name__ == "__main__":

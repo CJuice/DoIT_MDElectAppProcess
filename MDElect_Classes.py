@@ -17,6 +17,9 @@ class Bridge_Class():
         self.md_district = data_dict["MD_District"]
         self.us_district = data_dict["US_District"]
 
+class Data_Class():
+    # Parent
+    pass
 
 class MDGov_Class():
     """
@@ -51,7 +54,9 @@ class MDGov_Class():
         self.comptroller = data_dict["Comptroller"]
         self.comptroller_maryland_manual_online = data_dict["Comptroller_Maryland_Manual_Online"]
 
-
+class MD_Data_Class(Data_Class):
+    # Child
+    pass
 class USGov_Class():
     """
     US Government specific elected officials data object.
@@ -75,6 +80,10 @@ class USGov_Class():
         self.us_representatives = data_dict["US_Representatives"]
         self.us_representatives_party = data_dict["US_Representatives_Party"]
         self.us_representatives_maryland_manual_online = data_dict["US_Representatives_Maryland_Manual_Online"]
+
+class US_Data_Class(Data_Class):
+    # Child
+    pass
 
 class Util_Class():
     """
@@ -161,6 +170,21 @@ class Util_Class():
         """
         result = cursor.execute(sql_command, parameters_sequence)
         return result
+
+    @staticmethod
+    def process_csv_data_to_objects(csv_path, object_type, delimeter=","):
+        gen = Util_Class.create_file_generator(csv_path)
+        obj_ls = []
+        i = 0
+        for line in gen:
+            if i > 0:
+                ls = line.split(delimeter)
+                new_obj = object_type(ls)
+                obj_ls.append(new_obj)
+                i += 1
+            else:
+                i += 1
+        return obj_ls
 
     @staticmethod
     def reverse_dictionary(dictionary):
