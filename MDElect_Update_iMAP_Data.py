@@ -113,32 +113,8 @@ def main():
 
     md_data_objects = mycls.Util_Class.process_csv_data_to_objects(csv_path=myvars.CSV_PATH_MDGOV.value, object_type=mycls.MD_Data_Class)
     us_data_objects = mycls.Util_Class.process_csv_data_to_objects(csv_path=myvars.CSV_PATH_USGOV.value, object_type=mycls.US_Data_Class)
-
-    print(md_data_objects)
-    print(us_data_objects)
-    exit()
-    # line_generator_Maryland = mycls.Util_Class.create_file_generator(myvars.CSV_PATH_MDGOV.value)
-    # md_csv_data_objects = []
-    # i = 0
-    # for line in line_generator_Maryland:
-    #     if i > 0:
-    #         ls = line.split(",")
-    #     else:
-    #         # Need index position of each header stored in dictionary
-    #         i += 1
-    #
-    #     # us object creation
-    # line_generator_US = mycls.Util_Class.create_file_generator(myvars.CSV_PATH_USGOV.value)
-    # us_csv_data_objects = []
-    # i = 0
-    # for line in line_generator_US:
-    #     if i > 0:
-    #         ls = line.split(",")
-    #         # make data object
-    #         i += 1
-    #     else:
-    #         # Need index position of each header stored in dictionary
-    #         i += 1
+    md_district_ID_to_data_object_dict = {object.district : object for object in md_data_objects}
+    us_district_ID_to_data_object_dict = {object.district : object for object in us_data_objects}
 
     import arcpy    # Delayed Import
 
@@ -169,12 +145,14 @@ def main():
 
     # establish cursor on each feature class
     with arcpy.da.UpdateCursor(in_table=myvars.MD_DISTRICTS_SDE_FC_NAME.value, field_names=myvars.md_sde_fc_districts_field_list) as cursor:
-
         for row in cursor:
             current_district = row[md_current_district_index]
-            print(current_district)
-            # Get data for current district and update the row
+            current_object = md_district_ID_to_data_object_dict[current_district]
 
+            # Get data for current district and update the row
+            cursor.updateRow(current_object.__str__())
+#TODO: check the above process updates the feature class in the correct field order, and run on staging.
+#TODO: If above is working correctly, make it into a function and call on md and us datasets
 
 
 if __name__ == "__main__":

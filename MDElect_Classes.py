@@ -2,6 +2,8 @@
 TODO
 
 """
+import MDElect_Variables
+
 class Bridge_Class():
     """
     Bridge table object between US Districts and MD Districts.
@@ -78,6 +80,12 @@ class MD_Data_Class(Data_Class):
                          sen_1=data_dict["State_Senator"],
                          sen_1_manual=data_dict["State_Senator_Maryland_Manual_Online"],
                          sen_1_party=data_dict["State_Senator_Party"])
+    def __str__(self):
+        ordered_values_for_printing = [self.district, self.senator_1, self.representative_1, self.representative_2,
+                                       self.representative_3, self.senator_1_party, self.representative_1_party,
+                                       self.representative_2_party, self.representative_3_party, self.senator_1,
+                                       self.senator_1_md_manual_online, self.senator_1_party]
+        return ",".join(ordered_values_for_printing)
 
 
 class USGov_Class():
@@ -119,17 +127,22 @@ class US_Data_Class(Data_Class):
                          sen_1=data_dict["US_Senator_1"],
                          sen_1_manual=data_dict["US_Senator_1_Maryland_Manual_Online"],
                          sen_1_party=data_dict["US_Senator_1_Party"])
+    def __str__(self):
+        ordered_values_for_printing = [self.label, self.name, self.district, self.representative_1,
+                                       self.representative_1_manual, self.representative_1_party, self.senator_1,
+                                       self.senator_1_md_manual_online, self.senator_1_party, self.senator_2,
+                                       self.senator_2_md_manual_online, self.senator_2_party]
+        return ",".join(ordered_values_for_printing)
 
 class Util_Class():
     """
     TODO
     """
-    def __init__(self):
-        pass
 
     @staticmethod
     def clean_url_slashes(url):
         return url.replace("\\", "/")
+
     @staticmethod
     def close_database_connection(connection):
         """
