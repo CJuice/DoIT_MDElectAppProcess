@@ -25,9 +25,9 @@ CREDENTIALS_PATH = CONSTANT(value=os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\
 CSV_DIRECTORY_PATH_IN_PRODUCTION = CONSTANT(value=go_up_one_directory_level())
 CSV_PATH_BRIDGE = CONSTANT(value=os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\20180613_Bridge.csv"))
 CSV_PATH_MDGOV = CONSTANT(value=os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\20180815_MarylandGovernment.csv"))    # TESTING
-# CSV_PATH_MDGOV = CONSTANT(value=os.path.join(CSV_PATH_PRODUCTION.value, r"MarylandGovernment.csv"))               # PRODUCTION
+# CSV_PATH_MDGOV = CONSTANT(value=os.path.join(CSV_DIRECTORY_PATH_IN_PRODUCTION.value, r"MarylandGovernment.csv"))  # PRODUCTION
 CSV_PATH_USGOV = CONSTANT(value=os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\20180815_USGovernment.csv"))          # TESTING
-# CSV_PATH_USGOV = CONSTANT(value=os.path.join(CSV_PATH_PRODUCTION.value, r"USGovernment.csv"))                     # PRODUCTION
+# CSV_PATH_USGOV = CONSTANT(value=os.path.join(CSV_DIRECTORY_PATH_IN_PRODUCTION.value, r"USGovernment.csv"))        # PRODUCTION
 FC_NAME = CONSTANT(value="ElectedOfficials")
 FEATURE_DATASET_NAME_SDE = CONSTANT(value="Staging.SDE.Boundaries_MD_ElectionBoundaries")           # STAGING
 # FEATURE_DATASET_NAME_SDE = CONSTANT(value="Production.SDE.Boundaries_MD_ElectionBoundaries")      # PRODUCTION
