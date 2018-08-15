@@ -13,7 +13,7 @@ combination polygons. This layer is geometrically identical to the hosted featur
 Once the feature class is updated, the Python API for ArcGIS is used to republish the ArcPro project and overwrite the
 hosted feature layer on ArcGIS Online.
 Author: CJuice
-Date: 20180619
+Date: 20180815
 """
 # TODO: weakness/pain point, when need to add/revise/delete field etc you have to manually change in multiple spots. Make code more flexible to solve this issue.
 
