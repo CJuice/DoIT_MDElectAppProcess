@@ -6,6 +6,14 @@ TODO
 from collections import namedtuple
 import os
 
+def go_up_one_directory_level():
+    """Changes the current working directory to one higher than the location of the script.
+    The folder structure in the server has the csv file sitting one directory up from the python script. Rather than
+    hard coding the path of the directory the script just steps up one from the location of the python files to see
+    the csv's."""
+    os.chdir("..")
+    return os.path.abspath(os.curdir)
+
 CONSTANT = namedtuple("CONSTANT", ["value"])
 
 # VARIABLES - CONSTANTS
@@ -14,24 +22,28 @@ ARCGIS_ONLINE_PORTAL = CONSTANT(value="https://maryland.maps.arcgis.com")
 ARCPRO_PROJECT_PATH = CONSTANT(
     value=os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\ElectedOfficals\ElectedOfficals.aprx"))
 CREDENTIALS_PATH = CONSTANT(value=os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\credentials.cfg"))
+CSV_DIRECTORY_PATH_IN_PRODUCTION = CONSTANT(value=go_up_one_directory_level())
 CSV_PATH_BRIDGE = CONSTANT(value=os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\20180613_Bridge.csv"))
-CSV_PATH_MDGOV = CONSTANT(value=os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\20180719_MarylandGovernment.csv"))
-CSV_PATH_USGOV = CONSTANT(value=os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\20180719_USGovernment.csv"))
+CSV_PATH_MDGOV = CONSTANT(value=os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\20180815_MarylandGovernment.csv"))    # TESTING
+# CSV_PATH_MDGOV = CONSTANT(value=os.path.join(CSV_PATH_PRODUCTION.value, r"MarylandGovernment.csv"))               # PRODUCTION
+CSV_PATH_USGOV = CONSTANT(value=os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\20180815_USGovernment.csv"))          # TESTING
+# CSV_PATH_USGOV = CONSTANT(value=os.path.join(CSV_PATH_PRODUCTION.value, r"USGovernment.csv"))                     # PRODUCTION
 FC_NAME = CONSTANT(value="ElectedOfficials")
-FEATURE_DATASET_NAME_SDE = CONSTANT(value="Staging.SDE.Boundaries_MD_ElectionBoundaries")  # STAGING
-# FEATURE_DATASET_NAME_SDE = CONSTANT(value="Production.SDE.Boundaries_MD_ElectionBoundaries")   # PRODUCTION
+FEATURE_DATASET_NAME_SDE = CONSTANT(value="Staging.SDE.Boundaries_MD_ElectionBoundaries")           # STAGING
+# FEATURE_DATASET_NAME_SDE = CONSTANT(value="Production.SDE.Boundaries_MD_ElectionBoundaries")      # PRODUCTION
 GDB_PATH_ARCPRO_PROJECT = CONSTANT(
     value=os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\ElectedOfficals\ElectedOfficals.gdb"))
-MD_DISTRICTS_SDE_FC_NAME = CONSTANT(value="Staging.SDE.BNDY_LegislativeDistricts2012_MDP")  # STAGING
-# MD_DISTRICTS_SDE_FC_NAME = CONSTANT(value="Production.SDE.BNDY_LegislativeDistricts2011_MDP")  # PRODUCTION
+MD_DISTRICTS_SDE_FC_NAME = CONSTANT(value="Staging.SDE.BNDY_LegislativeDistricts2012_MDP")          # STAGING
+# MD_DISTRICTS_SDE_FC_NAME = CONSTANT(value="Production.SDE.BNDY_LegislativeDistricts2011_MDP")     # PRODUCTION
 SD_FEATURE_SERVICE_NAME = CONSTANT(value="Elected_Officials")
 SD_FILE_STORAGE_LOCATION = CONSTANT(value=os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\sd_file_storage"))
 SD_FILENAME_DRAFT = CONSTANT(value="Elected_Officals.sddraft")
 SD_FILENAME = CONSTANT(value="Elected_Officals.sd")
+
 SDE_CONNECTION_FILE = CONSTANT(
-    value=os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\SDE_CONNECTION_FILE\Staging on gis-db-imap01p.sde"))  # STAGING
+    value=os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\SDE_CONNECTION_FILE\Staging on gis-db-imap01p.sde"))                                    # STAGING
 # SDE_CONNECTION_FILE = CONSTANT(
-#     value=os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\SDE_CONNECTION_FILE\Production as sde on gis-ags-imap01p.mdgov.maryland.gov.sde"))  # PRODUCTION
+#     value=os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\SDE_CONNECTION_FILE\Production as sde on gis-ags-imap01p.mdgov.maryland.gov.sde"))    # PRODUCTION
 SQL_CREATE_BRIDGE = CONSTANT(
     value="""CREATE TABLE BRIDGE (Row_ID text primary key, MD_District text, US_District text)""")
 SQL_CREATE_MDGOV = CONSTANT(value="""CREATE TABLE MDGOV (
@@ -78,8 +90,8 @@ SQL_INSERT_USGOV = CONSTANT(
     value="""INSERT OR IGNORE INTO usgov VALUES (:us_district, :name, :label, :us_senator_1, :us_senator_1_party, :us_senator_1_maryland_manual_online, :us_senator_2, :us_senator_2_party, :us_senator_2_maryland_manual_online, :us_representatives, :us_representatives_party, :us_representatives_maryland_manual_online)""")
 SQL_SELECT_OUTPUT_DATA = CONSTANT(
     value="""SELECT MDGOV.*, USGOV.*, BRIDGE.Row_ID FROM MDGOV, BRIDGE, USGOV WHERE MDGOV.MD_District = BRIDGE.MD_District AND BRIDGE.US_District = USGOV.US_District""")
-US_DISTRICTS_SDE_FC_NAME = CONSTANT(value="Staging.SDE.BNDY_CongressionalDistricts2011_MDP")  # STAGING
-# US_DISTRICTS_SDE_FC_NAME = CONSTANT(value="Production.SDE.BNDY_CongressionalDistricts2012_MDP")  # PRODUCTION
+US_DISTRICTS_SDE_FC_NAME = CONSTANT(value="Staging.SDE.BNDY_CongressionalDistricts2011_MDP")            # STAGING
+# US_DISTRICTS_SDE_FC_NAME = CONSTANT(value="Production.SDE.BNDY_CongressionalDistricts2012_MDP")       # PRODUCTION
 
 # VARIABLES - OTHER
 csv_headers_to_agol_fc_field_names_dict = {"MD_District": "MD_District",
@@ -152,11 +164,9 @@ us_csv_headers_to_sde_fc_field_names_dict = {'Label': "Label",
                                              'US_Senator_2_Maryland_Manual_Online': "US_Senator_2_MDManualURL",
                                              'US_Senator_2_Party': "US_Senator_2_Party"}
 
-us_sde_fc_districts_field_list = ['ID', 'DISTRICT', 'NAME', 'Label', 'US_Representatives', 'US_Representatives_Party',
-                                  'US_Senator_1',
-                                  'US_Senator_1_Party', 'US_Senator_2', 'US_Senator_2_Party',
-                                  'US_Senator_1_MDManualURL',
-                                  'US_Senator_2_MDManualURL',
+us_sde_fc_districts_field_list = ['DISTRICT', 'NAME', 'Label', 'US_Representatives', 'US_Representatives_Party',
+                                  'US_Senator_1', 'US_Senator_1_Party', 'US_Senator_2', 'US_Senator_2_Party',
+                                  'US_Senator_1_MDManualURL', 'US_Senator_2_MDManualURL',
                                   'US_Representatives_MDManualURL']
 
 # _____________________________________________________________________________________________________________

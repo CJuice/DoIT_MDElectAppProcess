@@ -83,9 +83,10 @@ class MD_Data_Class(Data_Class):
     def __str__(self):
         ordered_values_for_printing = [self.district, self.senator_1, self.representative_1, self.representative_2,
                                        self.representative_3, self.senator_1_party, self.representative_1_party,
-                                       self.representative_2_party, self.representative_3_party, self.senator_1,
-                                       self.senator_1_md_manual_online, self.senator_1_party]
-        return ",".join(ordered_values_for_printing)
+                                       self.representative_2_party, self.representative_3_party,
+                                       self.senator_1_md_manual_online, self.representative_1_manual,
+                                       self.representative_2_md_manual_online, self.representative_3_md_manual_online]
+        return tuple(ordered_values_for_printing)
 
 
 class USGov_Class():
@@ -127,12 +128,25 @@ class US_Data_Class(Data_Class):
                          sen_1=data_dict["US_Senator_1"],
                          sen_1_manual=data_dict["US_Senator_1_Maryland_Manual_Online"],
                          sen_1_party=data_dict["US_Senator_1_Party"])
+        US_Data_Class.check_district_value(self)
+
     def __str__(self):
-        ordered_values_for_printing = [self.label, self.name, self.district, self.representative_1,
-                                       self.representative_1_manual, self.representative_1_party, self.senator_1,
-                                       self.senator_1_md_manual_online, self.senator_1_party, self.senator_2,
-                                       self.senator_2_md_manual_online, self.senator_2_party]
-        return ",".join(ordered_values_for_printing)
+        ordered_values_for_printing = [self.district, self.name, self.label, self.representative_1,
+                                       self.representative_1_party, self.senator_1, self.senator_1_party,
+                                       self.senator_2, self.senator_2_party, self.senator_1_md_manual_online,
+                                       self.senator_2_md_manual_online, self.representative_1_manual]
+        return tuple(ordered_values_for_printing)
+
+    @staticmethod
+    def check_district_value(self):
+        """Adds a '0' to front of district value if not there already.
+        CSV data was '1' instead of '01', for example. Didn't know how to do an @property with the super() call
+        so used a static method. Only applied to US Districts."""
+        if (self.district).startswith('0'):
+            pass
+        else:
+            self.district = f"0{self.district}"
+
 
 class Util_Class():
     """
@@ -247,3 +261,13 @@ class Util_Class():
         :return: reversed dictionary
         """
         return {value: key for key, value in dictionary.items()}
+
+    @staticmethod
+    def update_sde_feature_class(in_table, field_names, current_district_index, district_info_dict):
+        import arcpy
+        with arcpy.da.UpdateCursor(in_table=in_table, field_names=field_names) as cursor:
+            for row in cursor:
+                current_district = row[current_district_index]
+                current_object = district_info_dict[current_district]
+                # Get data for current district as csv string and update the row
+                cursor.updateRow(current_object.__str__())
