@@ -1,11 +1,13 @@
 """
 Update the MD and US Election Boundaries SDE stored feature class attributes with data in csv's created from MD State Archives Google Sheet.
 
-Access the MD State Archives maintained data pulled from Google Sheets and saved into csv's by Matts GSpread routine.
-Use the data to update the SDE stored election boundaries feature classes. The attributes are the only aspect updated.
-The geometries are not edited. There are two feature classes to be updated. These are the Maryland and the US Government
-election boundaries.
-20180815, CJuice
+Process looks for csv files of data on elected officials. The Maryland State Archive agency maintains the elected
+officials data using two tabs in a Google Sheet. We have a process that pulls csv's of the tabs. One tab is MD specific,
+the other is Federal specific. Access the csv's and use the data to update the SDE stored election boundaries
+feature classes. The attributes are the only aspect updated. The geometries are not edited by this process. There are
+ two feature classes to be updated. These are the Maryland and the US Government election boundaries.
+Date: 20180815
+Author: CJuice
 """
 
 def main():

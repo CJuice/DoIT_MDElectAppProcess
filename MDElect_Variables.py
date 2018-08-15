@@ -3,8 +3,8 @@ Centralized location for all variables used in the two steps of the Update Proce
 Step 1 updates the hosted feature layer in ArcGIS Online. Step 2 updates the SDE stored election boundaries feature
 classes. Variables are alphabetized within two categories, Constants and Other. The design is intended to ease editing
 by non-developers, if necessary.
-
-20180815, CJuice
+Date: 20180815
+Author: CJuice
 """
 
 from collections import namedtuple

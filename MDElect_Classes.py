@@ -8,6 +8,8 @@ MD_Data_Class inherits from Data_Class and is specific to the MD SDE boundaries 
 USGov_Class created for writing US boundary data to database
 US_Data_Class inherits from Data_Class and is specific to the US SDE boundaries feature class attributes
 Util_Class created to centrally organized functions floating in scripts, and to honor the DRY principal.
+Date: 20180815
+Author: CJuice
 """
 
 class Bridge_Class():
