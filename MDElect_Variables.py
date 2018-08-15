@@ -1,16 +1,21 @@
 """
-TODO
+Centralized location for all variables used in the two steps of the Update Process.
+Step 1 updates the hosted feature layer in ArcGIS Online. Step 2 updates the SDE stored election boundaries feature
+classes. Variables are alphabetized within two categories, Constants and Other. The design is intended to ease editing
+by non-developers, if necessary.
 
+20180815, CJuice
 """
 
 from collections import namedtuple
 import os
 
 def go_up_one_directory_level():
-    """Changes the current working directory to one higher than the location of the script.
-    The folder structure in the server has the csv file sitting one directory up from the python script. Rather than
-    hard coding the path of the directory the script just steps up one from the location of the python files to see
-    the csv's."""
+    """Changes the current working directory to one higher than the location of this script.
+    The folder structure in the server has the csv file sitting one directory up from the project python scripts.
+    Rather than hard coding the path of the directory the script just steps up one from the location of the python
+    files to see the csv's. Function created here instead of MDElect_Classes to avoid importing entire module, which
+    is imported by script that imports this script."""
     os.chdir("..")
     return os.path.abspath(os.curdir)
 
@@ -19,8 +24,7 @@ CONSTANT = namedtuple("CONSTANT", ["value"])
 # VARIABLES - CONSTANTS
 _ROOT_PROJECT_PATH = CONSTANT(value=os.path.dirname(__file__))
 ARCGIS_ONLINE_PORTAL = CONSTANT(value="https://maryland.maps.arcgis.com")
-ARCPRO_PROJECT_PATH = CONSTANT(
-    value=os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\ElectedOfficals\ElectedOfficals.aprx"))
+ARCPRO_PROJECT_PATH = CONSTANT(value=os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\ElectedOfficals\ElectedOfficals.aprx"))
 CREDENTIALS_PATH = CONSTANT(value=os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\credentials.cfg"))
 CSV_DIRECTORY_PATH_IN_PRODUCTION = CONSTANT(value=go_up_one_directory_level())
 CSV_PATH_BRIDGE = CONSTANT(value=os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\20180613_Bridge.csv"))
@@ -31,21 +35,16 @@ CSV_PATH_USGOV = CONSTANT(value=os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\20
 FC_NAME = CONSTANT(value="ElectedOfficials")
 FEATURE_DATASET_NAME_SDE = CONSTANT(value="Staging.SDE.Boundaries_MD_ElectionBoundaries")           # STAGING
 # FEATURE_DATASET_NAME_SDE = CONSTANT(value="Production.SDE.Boundaries_MD_ElectionBoundaries")      # PRODUCTION
-GDB_PATH_ARCPRO_PROJECT = CONSTANT(
-    value=os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\ElectedOfficals\ElectedOfficals.gdb"))
+GDB_PATH_ARCPRO_PROJECT = CONSTANT(value=os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\ElectedOfficals\ElectedOfficals.gdb"))
 MD_DISTRICTS_SDE_FC_NAME = CONSTANT(value="Staging.SDE.BNDY_LegislativeDistricts2012_MDP")          # STAGING
 # MD_DISTRICTS_SDE_FC_NAME = CONSTANT(value="Production.SDE.BNDY_LegislativeDistricts2011_MDP")     # PRODUCTION
 SD_FEATURE_SERVICE_NAME = CONSTANT(value="Elected_Officials")
 SD_FILE_STORAGE_LOCATION = CONSTANT(value=os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\sd_file_storage"))
-SD_FILENAME_DRAFT = CONSTANT(value="Elected_Officals.sddraft")
 SD_FILENAME = CONSTANT(value="Elected_Officals.sd")
-
-SDE_CONNECTION_FILE = CONSTANT(
-    value=os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\SDE_CONNECTION_FILE\Staging on gis-db-imap01p.sde"))                                    # STAGING
-# SDE_CONNECTION_FILE = CONSTANT(
-#     value=os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\SDE_CONNECTION_FILE\Production as sde on gis-ags-imap01p.mdgov.maryland.gov.sde"))    # PRODUCTION
-SQL_CREATE_BRIDGE = CONSTANT(
-    value="""CREATE TABLE BRIDGE (Row_ID text primary key, MD_District text, US_District text)""")
+SD_FILENAME_DRAFT = CONSTANT(value="Elected_Officals.sddraft")
+SDE_CONNECTION_FILE = CONSTANT(value=os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\SDE_CONNECTION_FILE\Staging on gis-db-imap01p.sde"))                                    # STAGING
+# SDE_CONNECTION_FILE = CONSTANT(value=os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\SDE_CONNECTION_FILE\Production as sde on gis-ags-imap01p.mdgov.maryland.gov.sde"))    # PRODUCTION
+SQL_CREATE_BRIDGE = CONSTANT(value="""CREATE TABLE BRIDGE (Row_ID text primary key, MD_District text, US_District text)""")
 SQL_CREATE_MDGOV = CONSTANT(value="""CREATE TABLE MDGOV (
                     MD_District text primary key,
                     State_Senator text,
@@ -84,14 +83,13 @@ SQL_CREATE_USGOV = CONSTANT(value="""CREATE TABLE USGOV (
                     US_Representative_Maryland_Manual_Online text
                     )""")
 SQL_INSERT_BRIDGE = CONSTANT(value="""INSERT OR IGNORE INTO bridge VALUES (:row_id, :md_district, :us_district)""")
-SQL_INSERT_MDGOV = CONSTANT(
-    value="""INSERT OR IGNORE INTO mdgov VALUES (:md_district, :state_senator, :state_senator_party, :state_senator_maryland_manual_online, :state_representative_1, :state_representative_1_party, :state_representative_1_maryland_manual_online, :state_representative_2, :state_representative_2_party, :state_representative_2_maryland_manual_online, :state_representative_3,  :state_representative_3_party, :state_representative_3_maryland_manual_online, :governor, :governor_maryland_manual_online, :lt_governor, :lt_governor_maryland_manual_online, :attorney_general, :attorney_general_maryland_manual_online, :comptroller, :comptroller_maryland_manual_online)""")
-SQL_INSERT_USGOV = CONSTANT(
-    value="""INSERT OR IGNORE INTO usgov VALUES (:us_district, :name, :label, :us_senator_1, :us_senator_1_party, :us_senator_1_maryland_manual_online, :us_senator_2, :us_senator_2_party, :us_senator_2_maryland_manual_online, :us_representatives, :us_representatives_party, :us_representatives_maryland_manual_online)""")
-SQL_SELECT_OUTPUT_DATA = CONSTANT(
-    value="""SELECT MDGOV.*, USGOV.*, BRIDGE.Row_ID FROM MDGOV, BRIDGE, USGOV WHERE MDGOV.MD_District = BRIDGE.MD_District AND BRIDGE.US_District = USGOV.US_District""")
+SQL_INSERT_MDGOV = CONSTANT(value="""INSERT OR IGNORE INTO mdgov VALUES (:md_district, :state_senator, :state_senator_party, :state_senator_maryland_manual_online, :state_representative_1, :state_representative_1_party, :state_representative_1_maryland_manual_online, :state_representative_2, :state_representative_2_party, :state_representative_2_maryland_manual_online, :state_representative_3,  :state_representative_3_party, :state_representative_3_maryland_manual_online, :governor, :governor_maryland_manual_online, :lt_governor, :lt_governor_maryland_manual_online, :attorney_general, :attorney_general_maryland_manual_online, :comptroller, :comptroller_maryland_manual_online)""")
+SQL_INSERT_USGOV = CONSTANT(value="""INSERT OR IGNORE INTO usgov VALUES (:us_district, :name, :label, :us_senator_1, :us_senator_1_party, :us_senator_1_maryland_manual_online, :us_senator_2, :us_senator_2_party, :us_senator_2_maryland_manual_online, :us_representatives, :us_representatives_party, :us_representatives_maryland_manual_online)""")
+SQL_SELECT_OUTPUT_DATA = CONSTANT(value="""SELECT MDGOV.*, USGOV.*, BRIDGE.Row_ID FROM MDGOV, BRIDGE, USGOV WHERE MDGOV.MD_District = BRIDGE.MD_District AND BRIDGE.US_District = USGOV.US_District""")
 US_DISTRICTS_SDE_FC_NAME = CONSTANT(value="Staging.SDE.BNDY_CongressionalDistricts2011_MDP")            # STAGING
 # US_DISTRICTS_SDE_FC_NAME = CONSTANT(value="Production.SDE.BNDY_CongressionalDistricts2012_MDP")       # PRODUCTION
+
+
 
 # VARIABLES - OTHER
 csv_headers_to_agol_fc_field_names_dict = {"MD_District": "MD_District",
@@ -171,7 +169,7 @@ us_sde_fc_districts_field_list = ['DISTRICT', 'NAME', 'Label', 'US_Representativ
 
 # _____________________________________________________________________________________________________________
 # Mapping between the csv field headers and the sde feature class headers
-# These do not exist in the fc but do exist in the csv
+# These do not exist in the fc but do exist in the csv. Could be needed at a later date.
 # 'Attorney_General': "",
 # 'Attorney_General_Maryland_Manual_Online': "",
 # 'Comptroller': "",
