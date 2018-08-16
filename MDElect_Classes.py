@@ -15,11 +15,12 @@ Author: CJuice
 class Bridge_Class():
     """
     Bridge table object between US Districts and MD Districts.
+    Created because a many-to-many relationship exists.
     """
 
     def __init__(self, data_dict):
         """
-        Instantiate object and populate with values from data_dictionary.
+        Instantiate object and populate with values from data dictionary.
 
         :param data_dict:  dictionary of header name key to record value for Bridge csv
         """
@@ -33,7 +34,7 @@ class Data_Class():
     """
     def __init__(self, district, rep_1, rep_1_manual, rep_1_party, sen_1, sen_1_manual, sen_1_party):
         """
-        Instantiates portion of data objects common to both MD and CSV datasets.
+        Instantiates portion of data objects common to both MD and US datasets.
 
         :param district: The district code/value
         :param rep_1: The first/only representative in the dataset
@@ -58,7 +59,7 @@ class MDGov_Class():
 
     def __init__(self, data_dict):
         """
-        Instantiate object and populate with values from data_dictionary.
+        Instantiate object and populate with values from data dictionary.
 
         :param data_dict: dictionary of header name key to record value for MD Districts csv
         """
@@ -90,7 +91,7 @@ class MD_Data_Class(Data_Class):
     """
     def __init__(self, data_dict):
         """
-
+        Instantiate object and populate with values from data dictionary.
         :param data_dict: dictionary of attribute values with field headers as keys
         """
         self.representative_2 = data_dict["State_Representative_2"]
@@ -108,7 +109,8 @@ class MD_Data_Class(Data_Class):
                          sen_1_party=data_dict["State_Senator_Party"])
     def __str__(self):
         """
-        Creates the value shown when an object is printed.
+        Creates the string value shown when an object is printed.
+        This method overrides the __str__ builtin.
 
         :return: tuple of values in the order required for updating SDE feature class
         """
@@ -126,7 +128,7 @@ class USGov_Class():
 
     def __init__(self, data_dict):
         """
-        Instantiate object and populate with values from dictionary.
+        Instantiate object and populate with values from data dictionary.
 
         :param data_dict: dictionary of csv header name key to record value for US Districts csv
         """
@@ -170,6 +172,7 @@ class US_Data_Class(Data_Class):
     def __str__(self):
         """
         Creates the value shown when an object is printed.
+        This method overrides the __str__ builtin.
 
         :return: tuple of values in the order required for updating SDE feature class
         """
@@ -202,7 +205,7 @@ class Util_Class():
         Standardize path slashes to be uniform in direction.
 
         :param url: path to be cleaned
-        :return:
+        :return: string, url with uniform slashes
         """
         return url.replace("\\", "/")
 
@@ -212,7 +215,7 @@ class Util_Class():
         Close the sqlite3 database connection.
 
         :param connection: sqlite3 connection to be closed
-        :return: Nothin
+        :return: Nothing
         """
         connection.close()
         return
@@ -267,7 +270,7 @@ class Util_Class():
         """
         Produce a generator for the given file path to make data available in memory efficient style.
         :param file_path: path to csv
-        :return: yields a line from csv, one at a time
+        :return: generator yielding one line from csv at a time
         """
         with open(file_path, 'r') as handler:
             for line in handler:
@@ -297,10 +300,10 @@ class Util_Class():
         :param delimeter: for csv files it is a comma
         :return: list of objects
         """
-        line_generator = Util_Class.create_file_generator(csv_path)
         headers_list = []
-        objects_list = []
         i = 0
+        line_generator = Util_Class.create_file_generator(csv_path)
+        objects_list = []
         for line in line_generator:
             line = line.strip()
             line_list = line.split(delimeter)
@@ -321,7 +324,7 @@ class Util_Class():
         Swap the key and value, creating new dictionary, and return new dictionary.
 
         :param dictionary: in dictionary to be reversed
-        :return: reversed dictionary
+        :return: dictionary
         """
         return {value: key for key, value in dictionary.items()}
 
@@ -334,12 +337,13 @@ class Util_Class():
         :param field_names: list of field names
         :param current_district_index: index position of District field in feature class fields of focus
         :param district_info_dict: district key, and attributes of interest (originally from csv) value
-        :return: none
+        :return: Nothing
         """
         import arcpy
         with arcpy.da.UpdateCursor(in_table=in_table, field_names=field_names) as cursor:
             for row in cursor:
                 current_district = row[current_district_index]
                 current_object = district_info_dict[current_district]
+                
                 # Get data for current district as csv string and update the row
                 cursor.updateRow(current_object.__str__())

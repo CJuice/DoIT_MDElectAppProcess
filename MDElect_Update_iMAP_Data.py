@@ -24,8 +24,10 @@ def main():
         # access the csv files generated from the google spreadsheet with tabs of US and Maryland election data
         # make data in csv files available in a memory efficient way
         # create data object appropriate to datasource (md/us) and store in list
-    md_data_objects = mycls.Util_Class.process_csv_data_to_objects(csv_path=myvars.CSV_PATH_MDGOV.value, object_type=mycls.MD_Data_Class)
-    us_data_objects = mycls.Util_Class.process_csv_data_to_objects(csv_path=myvars.CSV_PATH_USGOV.value, object_type=mycls.US_Data_Class)
+    md_data_objects = mycls.Util_Class.process_csv_data_to_objects(csv_path=myvars.CSV_PATH_MDGOV.value,
+                                                                   object_type=mycls.MD_Data_Class)
+    us_data_objects = mycls.Util_Class.process_csv_data_to_objects(csv_path=myvars.CSV_PATH_USGOV.value,
+                                                                   object_type=mycls.US_Data_Class)
     md_district_ID_to_data_object_dict = {object.district : object for object in md_data_objects}
     us_district_ID_to_data_object_dict = {object.district : object for object in us_data_objects}
 
@@ -35,7 +37,9 @@ def main():
     arcpy.env.overwriteOutput = True
 
         # Set GIS workspace
-    districts_fd = mycls.Util_Class.clean_url_slashes(os.path.join(myvars._ROOT_PROJECT_PATH.value, myvars.SDE_CONNECTION_FILE.value, myvars.FEATURE_DATASET_NAME_SDE.value))
+    districts_fd = mycls.Util_Class.clean_url_slashes(url=os.path.join(myvars._ROOT_PROJECT_PATH.value,
+                                                                       myvars.SDE_CONNECTION_FILE.value,
+                                                                       myvars.FEATURE_DATASET_NAME_SDE.value))
     arcpy.env.workspace = districts_fd
 
         # access the sde feature class to be updated and inventory field names. Store names for use after stripping
