@@ -41,6 +41,7 @@ def main():
 
     # FUNCTIONALITY
         # Assert that core files are present.
+    assert os.path.exists(myvars.ARCPRO_PROJECT_PATH.value)
     assert os.path.exists(myvars.CREDENTIALS_PATH.value)
     assert os.path.exists(myvars.CSV_PATH_BRIDGE.value)
     assert os.path.exists(myvars.CSV_PATH_MDGOV.value)
@@ -174,9 +175,26 @@ def main():
         # Find the existingSD, update it, publish to overwrite and set sharing and metadata.
         # Must be owned by the account whose credentials this process uses, and named the same
     try:
-        # Ran no issues from local environment.
-        agol_sd_item = gis.content.search(query="{} AND owner:{}".format(myvars.SD_FEATURE_SERVICE_NAME.value, agol_username),
-                                          item_type="Service Definition")[0]
+        ##        See https://community.esri.com/thread/166663
+        ##        agol_sd_item = gis.content.search(query="{} AND owner:{}".format(SD_FEATURE_SERVICE_NAME.value, agol_username),
+        ##                                          item_type="Service Definition")[0]
+        # agol_sd_item = gis.content.search(query="{} AND owner:{}".format(myvars.SD_FEATURE_SERVICE_NAME.value, agol_username),
+        #                                   item_type="Service Definition")[0]
+
+        agol_sd_items = gis.content.search(query="title:{} AND owner:{}".format(myvars.SD_FEATURE_SERVICE_NAME.value, agol_username),
+                                          item_type="Service Definition")
+        print(agol_sd_items)
+        if len(agol_sd_items) > 1:
+            important_message_on_searching = """The query results for {} returned more than one layer (len = {}). We discovered
+             that if you don't specify 'title:' in the query then searching for Elected_Officials returns both 
+             ElectedOfficials and Elected_Officials. The blog example had us taking the zeroith index and 
+             the value in zero was ElectedOfficals, which was incorrect.""".format(myvars.SD_FEATURE_SERVICE_NAME.value,
+                                                                                   len(agol_sd_items))
+            print(important_message_on_searching)
+            raise Exception
+        agol_sd_item = agol_sd_items[0]
+        print("FoundSD: {}, ID: {} Uploading and overwriting…".format(agol_sd_item.title, agol_sd_item.id)) # I checked the agol_sd_item.id against the id in arcgis online and they match.
+
         # After encountered error when deployed to server, found https://community.esri.com/thread/166663
         # agol_sd_item = gis.content.search(query="title:" + SD_FEATURE_SERVICE_NAME.value + " AND owner: " + agol_username,
         #                                   item_type="Service Definition")[0]
@@ -185,8 +203,19 @@ def main():
             "Search for .sd file not successful. Check that .sd file is present and named identically, and that the account credentials supplied are for the owner of the .sd file.")
         exit()
 
-    agol_sd_item.update(data=sd_filename)
-    feature_service = agol_sd_item.publish(overwrite=True)
+    try:
+        print("Updating existing service definition file using {}".format(sd_filename))
+        agol_sd_item.update(data=sd_filename)
+    except Exception as e:
+        print(e)
+        exit()
+
+    try:
+        print("Overwriting existing feature service using {}".format(sd_filename))
+        feature_service = agol_sd_item.publish(overwrite=True)
+    except Exception as e:
+        print(e)
+        exit()
     if share_organization or share_everyone or share_groups:
         feature_service.share(org=share_organization, everyone=share_everyone, groups=share_groups)
 

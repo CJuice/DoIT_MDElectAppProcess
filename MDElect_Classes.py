@@ -344,6 +344,6 @@ class Util_Class():
             for row in cursor:
                 current_district = row[current_district_index]
                 current_object = district_info_dict[current_district]
-                
+
                 # Get data for current district as csv string and update the row
                 cursor.updateRow(current_object.__str__())
