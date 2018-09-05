@@ -14,10 +14,15 @@ Once the feature class is updated, the Python API for ArcGIS is used to republis
 hosted feature layer on ArcGIS Online.
 Author: CJuice
 Date: 20180815
+Revision: 20180905, NOTE: If encounter the following error:
+    'Traceback: in CreateWebLayerSDDraft return _convertArcObjectToPythonObject(...) RuntimeError'
+    it appears to be that the ArcPro session login has expired. Despite the credentials being available for login it
+    looks like ArcPro must be opened, sign-in must be completed, and the sign-in must be valid when the process is run.
 """
 # TODO: weakness/pain point, when need to add/revise/delete field etc you have to manually change in multiple spots. Make code more flexible to solve this issue.
 
 # TODO: Test to see if this works after undergoing the overhaull and redesign
+
 
 def main():
     # IMPORTS - Some delayed imports exist, for performance improvement
@@ -35,12 +40,12 @@ def main():
     share_organization = False
     sql_create_namedtuples_list = [myvars.SQL_CREATE_BRIDGE, myvars.SQL_CREATE_MDGOV, myvars.SQL_CREATE_USGOV]
     sql_insert_namedtuples_list = [myvars.SQL_INSERT_BRIDGE, myvars.SQL_INSERT_MDGOV, myvars.SQL_INSERT_USGOV]
-        # Dependent Variables
+    #   Dependent Variables
     csvobj_classobj_pairing = dict(zip(csv_paths_namedtuples_list, class_types_namedtuples_list))
     csvobj_sqlinsertobj_pairing = dict(zip(csv_paths_namedtuples_list, sql_insert_namedtuples_list))
 
     # FUNCTIONALITY
-        # Assert that core files are present.
+    #   Assert that core files are present.
     assert os.path.exists(myvars.ARCPRO_PROJECT_PATH.value)
     assert os.path.exists(myvars.CREDENTIALS_PATH.value)
     assert os.path.exists(myvars.CSV_PATH_BRIDGE.value)
@@ -58,7 +63,7 @@ def main():
     for sql_namedtuple in sql_create_namedtuples_list:
         mdcls.Util_Class.execute_sql_command(cursor=curs, sql_command=sql_namedtuple.value)
 
-        # Need to access CSV's, work on each one storing contents as objects and writing to database
+    # Need to access CSV's, work on each one storing contents as objects and writing to database
     for csv_path_namedtuple in csv_paths_namedtuples_list:
         with open(csv_path_namedtuple.value, 'r') as csv_file_handler:
             records_list_list = [(mdcls.Util_Class.clean_and_split(line=line)) for line in csv_file_handler]
@@ -74,14 +79,14 @@ def main():
             # Need to get the appropriate insert sql statement and write CSV's to appropriate database table
             insert_sql_namedtuple = csvobj_sqlinsertobj_pairing[csv_path_namedtuple]
             mdcls.Util_Class.execute_sql_command(cursor=curs,
-                                sql_command=insert_sql_namedtuple.value,
-                                parameters_sequence=data_object.__dict__)
+                                                 sql_command=insert_sql_namedtuple.value,
+                                                 parameters_sequence=data_object.__dict__)
 
-        # Need to make call to database to join tables and create one master dataset for overwrite/upload use
+    # Need to make call to database to join tables and create one master dataset for overwrite/upload use
     query_results = mdcls.Util_Class.execute_sql_command(cursor=curs,sql_command=myvars.SQL_SELECT_OUTPUT_DATA.value)
     full_data_dictionary_from_csv_data = {row[-1] : tuple(row) for row in query_results}
 
-        # SQL Commit and Close out
+    # SQL Commit and Close out
     mdcls.Util_Class.commit_to_database(conn)
     mdcls.Util_Class.close_database_connection(conn)
 
@@ -89,35 +94,37 @@ def main():
     # PART 2 - Need to access feature class and update using data from in-memory database master query results from Step 1
     #___________________________________________
 
-        # SPATIAL
-        # Need access to the feature class
+    # SPATIAL
+    # Need access to the feature class
     import arcpy        # Delayed import for performance
     arcpy.env.workspace = myvars.GDB_PATH_ARCPRO_PROJECT.value
 
-        # Need the fc field names
+    # Need the fc field names
     fc_fields = arcpy.ListFields(myvars.FC_NAME.value)
     fc_field_names_list = [(field.name).strip() for field in fc_fields]
 
-        # Need to reverse the header mapping between gis data and csv data. Originally created opposite to end need, meh.
-    fc_field_names_to_csv_headers_dict = mdcls.Util_Class.reverse_dictionary(myvars.csv_headers_to_agol_fc_field_names_dict)
+    # Need to reverse the header mapping between gis data and csv data. Originally created opposite to end need, meh.
+    fc_field_names_to_csv_headers_dict = mdcls.Util_Class.reverse_dictionary(
+        myvars.csv_headers_to_agol_fc_field_names_dict)
 
-        # Need to excludes spatial fields like ObjectID and Shape. Isolate the fc fields, whose field names have a corresponding header in the csv file.
+    # Need to excludes spatial fields like ObjectID and Shape. Isolate the fc fields, whose field names have a
+    #   corresponding header in the csv file.
     fc_field_names_matching_header_list = [name for name in fc_field_names_list if
                                            name in fc_field_names_to_csv_headers_dict.keys()]
 
-        # Need index position of matching, but after isolating non-spatial fields need new index positions.
-        #   Build dictionary of header keys with their 'new' index position values
+    # Need index position of matching, but after isolating non-spatial fields need new index positions.
+    #   Build dictionary of header keys with their 'new' index position values
     fc_field_names_matching_csv_header__index_dictionary = mdcls.Util_Class.reverse_dictionary(
         dict(enumerate(fc_field_names_matching_header_list)))
 
-        # Need to step through every feature class row and update the data with data from csv.
+    # Need to step through every feature class row and update the data with data from csv.
     with arcpy.da.UpdateCursor(in_table=myvars.FC_NAME.value, field_names=fc_field_names_matching_header_list) as update_cursor:
         for row in update_cursor:
 
             # Use header index dictionary to supply index position of row_id in modified pull (no spatial fields)
             current_row_id = row[fc_field_names_matching_csv_header__index_dictionary["Row_ID"]]
 
-            # use the current row_id to get the correct record of data from the updated csv data in the in-memory database
+            # Use current row_id to get the correct record of data from the updated csv data in the in-memory database
             csv_data_for_current_row_id = full_data_dictionary_from_csv_data[current_row_id]
 
             # use the new record to replace the existing fc row
@@ -132,16 +139,18 @@ def main():
 
     from arcgis.gis import GIS          # Delayed import for performance
 
-        # Need credentials from config file
+    # Need credentials from config file
     config = configparser.ConfigParser()
     config.read(filenames=myvars.CREDENTIALS_PATH.value)
     agol_username = config['DEFAULT']["username"]
     agol_password = config['DEFAULT']["password"]
 
-        # Need a new SDDraft and to stage it to SD
+    # Need a new SDDraft and to stage it to SD
     arcpy.env.overwriteOutput = True
     arcpro_project = arcpy.mp.ArcGISProject(aprx_path=myvars.ARCPRO_PROJECT_PATH.value)
-    arcpro_map = arcpro_project.listMaps()[0]  # Note: keep your pro project simple, have only one map in aprx. Process grabs first map.
+
+    # Note: keep pro project simple, have only one map in aprx. Process grabs first map.
+    arcpro_map = arcpro_project.listMaps()[0]
     arcpy.mp.CreateWebLayerSDDraft(map_or_layers=arcpro_map,
                                    out_sddraft=sd_draft_filename,
                                    service_name=myvars.SD_FEATURE_SERVICE_NAME.value,
@@ -161,7 +170,7 @@ def main():
     arcpy.StageService_server(in_service_definition_draft=sd_draft_filename,
                               out_service_definition=sd_filename)
 
-        # Need connection with AGOL
+    # Need connection with AGOL
     gis = GIS(url=myvars.ARCGIS_ONLINE_PORTAL.value,
               username=agol_username,
               password=agol_password,
@@ -172,8 +181,8 @@ def main():
               client_id=None,
               profile=None)
 
-        # Find the existingSD, update it, publish to overwrite and set sharing and metadata.
-        # Must be owned by the account whose credentials this process uses, and named the same
+    # Find the existingSD, update it, publish to overwrite and set sharing and metadata.
+    # Must be owned by the account whose credentials this process uses, and named the same
     try:
         ##        See https://community.esri.com/thread/166663
         ##        agol_sd_item = gis.content.search(query="{} AND owner:{}".format(SD_FEATURE_SERVICE_NAME.value, agol_username),
@@ -193,7 +202,9 @@ def main():
             print(important_message_on_searching)
             raise Exception
         agol_sd_item = agol_sd_items[0]
-        print("FoundSD: {}, ID: {} Uploading and overwriting…".format(agol_sd_item.title, agol_sd_item.id)) # I checked the agol_sd_item.id against the id in arcgis online and they match.
+
+        # I checked the agol_sd_item.id against the id in arcgis online and they match.
+        print("FoundSD: {}, ID: {} Uploading and overwriting…".format(agol_sd_item.title, agol_sd_item.id))
 
         # After encountered error when deployed to server, found https://community.esri.com/thread/166663
         # agol_sd_item = gis.content.search(query="title:" + SD_FEATURE_SERVICE_NAME.value + " AND owner: " + agol_username,
@@ -218,6 +229,7 @@ def main():
         exit()
     if share_organization or share_everyone or share_groups:
         feature_service.share(org=share_organization, everyone=share_everyone, groups=share_groups)
+
 
 if __name__ == "__main__":
     main()
