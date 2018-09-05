@@ -39,7 +39,7 @@ FEATURE_DATASET_NAME_SDE = CONSTANT(value="Staging.SDE.Boundaries_MD_ElectionBou
 # FEATURE_DATASET_NAME_SDE = CONSTANT(value="Production.SDE.Boundaries_MD_ElectionBoundaries")        # PRODUCTION
 GDB_PATH_ARCPRO_PROJECT = CONSTANT(value=os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\ElectedOfficals\ElectedOfficals.gdb"))
 MD_DISTRICTS_SDE_FC_NAME = CONSTANT(value="Staging.SDE.BNDY_LegislativeDistricts2012_MDP")          # STAGING
-# MD_DISTRICTS_SDE_FC_NAME = CONSTANT(value="Production.SDE.BNDY_LegislativeDistricts2011_MDP")       # PRODUCTION
+# MD_DISTRICTS_SDE_FC_NAME = CONSTANT(value="Production.SDE.BNDY_LegislativeDistricts2012_MDP")       # PRODUCTION
 SD_FEATURE_SERVICE_NAME = CONSTANT(value="Elected_Officials")   # SD = Service Definition
 SD_FILE_STORAGE_LOCATION = CONSTANT(value=os.path.join(_ROOT_PROJECT_PATH.value, r"Docs\sd_file_storage"))
 SD_FILENAME = CONSTANT(value="Elected_Officals.sd")
@@ -89,7 +89,7 @@ SQL_INSERT_MDGOV = CONSTANT(value="""INSERT OR IGNORE INTO mdgov VALUES (:md_dis
 SQL_INSERT_USGOV = CONSTANT(value="""INSERT OR IGNORE INTO usgov VALUES (:us_district, :name, :label, :us_senator_1, :us_senator_1_party, :us_senator_1_maryland_manual_online, :us_senator_2, :us_senator_2_party, :us_senator_2_maryland_manual_online, :us_representatives, :us_representatives_party, :us_representatives_maryland_manual_online)""")
 SQL_SELECT_OUTPUT_DATA = CONSTANT(value="""SELECT MDGOV.*, USGOV.*, BRIDGE.Row_ID FROM MDGOV, BRIDGE, USGOV WHERE MDGOV.MD_District = BRIDGE.MD_District AND BRIDGE.US_District = USGOV.US_District""")
 US_DISTRICTS_SDE_FC_NAME = CONSTANT(value="Staging.SDE.BNDY_CongressionalDistricts2011_MDP")            # STAGING
-# US_DISTRICTS_SDE_FC_NAME = CONSTANT(value="Production.SDE.BNDY_CongressionalDistricts2012_MDP")         # PRODUCTION
+# US_DISTRICTS_SDE_FC_NAME = CONSTANT(value="Production.SDE.BNDY_CongressionalDistricts2011_MDP")         # PRODUCTION
 
 
 
