@@ -103,11 +103,15 @@ def main():
     print("ArcPro ArcInfo License Availability...")
     license_avail_arcinfo = arcpy.CheckProduct('arcinfo')
     if license_avail_arcinfo == "Available":
-        print(f"Required license not available.")
+        print(f"Required license available.\n"
+              f"arcpy.CheckProduct('arcinfo') returned {license_avail_arcinfo}\n"
+              )
     else:
         install_info = arcpy.GetInstallInfo(product=None)
         product_info = arcpy.ProductInfo()
         print(f"Required license not available.\n"
+              f"NOTE: Could be that ArcPro sign-in session has expired. Login to server using Visual Cron account that"
+              f"triggers the script, open ArcPro, and sign into ArcGIS Online from within ArcPro."
               f"arcpy.CheckProduct('arcinfo') returned {license_avail_arcinfo}\n"
               f"arcpy.GetInstallInfo() returned {install_info}\n"
               f"arcpy.ProductInfo() returned {product_info}"
@@ -186,9 +190,8 @@ def main():
                                        credits=None,
                                        use_limitations=None)
     except RuntimeError as rte:
-        print(f"NOTE: Could be that ArcPro sign-in session has expired. Open Pro and sign in as mdimapdatacatalog ... "
-              f"{rte}")
-        exit(code=1)
+        print(f"{rte}")
+        exit()
     else:
         arcpy.StageService_server(in_service_definition_draft=sd_draft_filename,
                                   out_service_definition=sd_filename)
