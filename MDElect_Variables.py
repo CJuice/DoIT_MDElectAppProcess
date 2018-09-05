@@ -10,6 +10,7 @@ Author: CJuice
 from collections import namedtuple
 import os
 
+
 def go_up_one_directory_level():
     """Changes the current working directory to one higher than the location of this script.
     The folder structure in the server has the csv file sitting one directory up from the project python scripts.
@@ -18,6 +19,7 @@ def go_up_one_directory_level():
     is imported by script that imports this script."""
     os.chdir("..")
     return os.path.abspath(os.curdir)
+
 
 CONSTANT = namedtuple("CONSTANT", ["value"])
 
