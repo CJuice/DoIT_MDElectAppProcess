@@ -64,7 +64,7 @@ def main():
     for sql_namedtuple in sql_create_namedtuples_list:
         mdcls.Util_Class.execute_sql_command(cursor=curs, sql_command=sql_namedtuple.value)
 
-    # Need to access CSV's, work on each one storing contents as objects and writing to database
+    # Need to access CSVs, work on each one storing contents as objects and writing to database
     for csv_path_namedtuple in csv_paths_namedtuples_list:
         with open(csv_path_namedtuple.value, 'r') as csv_file_handler:
             records_list_list = [(mdcls.Util_Class.clean_and_split(line=line)) for line in csv_file_handler]
@@ -98,11 +98,27 @@ def main():
     # SPATIAL
     # Need access to the feature class
     import arcpy        # Delayed import for performance
+
+    # ArcInfo must be available for arcpy.mp.CreateWebLayerSDDraft and other processes to run
+    print("Checking ArcPro ArcInfo License Availability...")
+    license_avail_arcinfo = arcpy.CheckProduct('arcinfo')
+    if license_avail_arcinfo == "Available":
+        pass
+    else:
+        install_info = arcpy.GetInstallInfo(product=None)
+        product_info = arcpy.ProductInfo()
+        print(f"Required license not available.\n"
+              f"arcpy.CheckProduct('arcinfo') returned {license_avail_arcinfo}\n"
+              f"arcpy.GetInstallInfo() returned {install_info}\n"
+              f"arcpy.ProductInfo() returned {product_info}"
+              )
+        exit()
+
     arcpy.env.workspace = myvars.GDB_PATH_ARCPRO_PROJECT.value
 
     # Need the fc field names
     fc_fields = arcpy.ListFields(myvars.FC_NAME.value)
-    fc_field_names_list = [(field.name).strip() for field in fc_fields]
+    fc_field_names_list = [field.name.strip() for field in fc_fields]
 
     # Need to reverse the header mapping between gis data and csv data. Originally created opposite to end need, meh.
     fc_field_names_to_csv_headers_dict = mdcls.Util_Class.reverse_dictionary(
@@ -169,12 +185,13 @@ def main():
                                        description=None,
                                        credits=None,
                                        use_limitations=None)
-        arcpy.StageService_server(in_service_definition_draft=sd_draft_filename,
-                                  out_service_definition=sd_filename)
     except RuntimeError as rte:
         print(f"NOTE: Could be that ArcPro sign-in session has expired. Open Pro and sign in as mdimapdatacatalog ... "
               f"{rte}")
-        exit()
+        exit(code=1)
+    else:
+        arcpy.StageService_server(in_service_definition_draft=sd_draft_filename,
+                                  out_service_definition=sd_filename)
 
     # Need connection with AGOL
     gis = GIS(url=myvars.ARCGIS_ONLINE_PORTAL.value,
