@@ -12,6 +12,7 @@ Date: 20180815
 Author: CJuice
 """
 
+
 class Bridge_Class():
     """
     Bridge table object between US Districts and MD Districts.
@@ -27,6 +28,7 @@ class Bridge_Class():
         self.row_id = data_dict["Row_ID"]
         self.md_district = data_dict["MD_District"]
         self.us_district = data_dict["US_District"]
+
 
 class Data_Class():
     """
@@ -51,6 +53,7 @@ class Data_Class():
         self.senator_1 = sen_1
         self.senator_1_md_manual_online = sen_1_manual
         self.senator_1_party = sen_1_party
+
 
 class MDGov_Class():
     """
@@ -85,6 +88,7 @@ class MDGov_Class():
         self.comptroller = data_dict["Comptroller"]
         self.comptroller_maryland_manual_online = data_dict["Comptroller_Maryland_Manual_Online"]
 
+
 class MD_Data_Class(Data_Class):
     """
     MD specific data object class; child class of Data_Class
@@ -107,6 +111,7 @@ class MD_Data_Class(Data_Class):
                          sen_1=data_dict["State_Senator"],
                          sen_1_manual=data_dict["State_Senator_Maryland_Manual_Online"],
                          sen_1_party=data_dict["State_Senator_Party"])
+
     def __str__(self):
         """
         Creates the string value shown when an object is printed.
@@ -120,6 +125,7 @@ class MD_Data_Class(Data_Class):
                                        self.senator_1_md_manual_online, self.representative_1_manual,
                                        self.representative_2_md_manual_online, self.representative_3_md_manual_online]
         return tuple(ordered_values_for_printing)
+
 
 class USGov_Class():
     """
@@ -145,10 +151,12 @@ class USGov_Class():
         self.us_representatives_party = data_dict["US_Representatives_Party"]
         self.us_representatives_maryland_manual_online = data_dict["US_Representatives_Maryland_Manual_Online"]
 
+
 class US_Data_Class(Data_Class):
     """
     US Government specific data object for step 2 process.
     """
+
     def __init__(self, data_dict):
         """
         Instantiate object and populate with values from dictionary.
@@ -193,6 +201,7 @@ class US_Data_Class(Data_Class):
             pass
         else:
             self.district = f"0{self.district}"
+
 
 class Util_Class():
     """
