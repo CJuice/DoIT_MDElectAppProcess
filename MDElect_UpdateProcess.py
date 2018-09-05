@@ -100,10 +100,10 @@ def main():
     import arcpy        # Delayed import for performance
 
     # ArcInfo must be available for arcpy.mp.CreateWebLayerSDDraft and other processes to run
-    print("Checking ArcPro ArcInfo License Availability...")
+    print("ArcPro ArcInfo License Availability...")
     license_avail_arcinfo = arcpy.CheckProduct('arcinfo')
     if license_avail_arcinfo == "Available":
-        pass
+        print(f"Required license not available.")
     else:
         install_info = arcpy.GetInstallInfo(product=None)
         product_info = arcpy.ProductInfo()
@@ -213,8 +213,9 @@ def main():
         # agol_sd_item = gis.content.search(query="{} AND owner:{}".format(myvars.SD_FEATURE_SERVICE_NAME.value, agol_username),
         #                                   item_type="Service Definition")[0]
 
-        agol_sd_items = gis.content.search(query="title:{} AND owner:{}".format(myvars.SD_FEATURE_SERVICE_NAME.value, agol_username),
-                                          item_type="Service Definition")
+        agol_sd_items = gis.content.search(query="title:{} AND owner:{}".format(myvars.SD_FEATURE_SERVICE_NAME.value,
+                                                                                agol_username),
+                                           item_type="Service Definition")
         print(agol_sd_items)
         if len(agol_sd_items) > 1:
             important_message_on_searching = """The query results for {} returned more than one layer (len = {}). We discovered
@@ -250,8 +251,11 @@ def main():
     except Exception as e:
         print(e)
         exit()
+
     if share_organization or share_everyone or share_groups:
         feature_service.share(org=share_organization, everyone=share_everyone, groups=share_groups)
+
+    print("Process Complete")
 
 
 if __name__ == "__main__":
