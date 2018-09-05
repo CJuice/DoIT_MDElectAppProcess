@@ -18,6 +18,7 @@ Revision: 20180905, NOTE: If encounter the following error:
     'Traceback: in CreateWebLayerSDDraft return _convertArcObjectToPythonObject(...) RuntimeError'
     it appears to be that the ArcPro session login has expired. Despite the credentials being available for login it
     looks like ArcPro must be opened, sign-in must be completed, and the sign-in must be valid when the process is run.
+    ArcPro does not need to be open when the process is run; Just the login must be valid.
 """
 # TODO: weakness/pain point, when need to add/revise/delete field etc you have to manually change in multiple spots. Make code more flexible to solve this issue.
 
