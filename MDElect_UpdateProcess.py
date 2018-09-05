@@ -152,24 +152,29 @@ def main():
 
     # Note: keep pro project simple, have only one map in aprx. Process grabs first map.
     arcpro_map = arcpro_project.listMaps()[0]
-    arcpy.mp.CreateWebLayerSDDraft(map_or_layers=arcpro_map,
-                                   out_sddraft=sd_draft_filename,
-                                   service_name=myvars.SD_FEATURE_SERVICE_NAME.value,
-                                   server_type="MY_HOSTED_SERVICES",
-                                   service_type="FEATURE_ACCESS",
-                                   folder_name="MD Elect",
-                                   overwrite_existing_service=True,
-                                   copy_data_to_server=True,
-                                   enable_editing=False,
-                                   allow_exporting=False,
-                                   enable_sync=False,
-                                   summary=None,
-                                   tags=None,
-                                   description=None,
-                                   credits=None,
-                                   use_limitations=None)
-    arcpy.StageService_server(in_service_definition_draft=sd_draft_filename,
-                              out_service_definition=sd_filename)
+    try:
+        arcpy.mp.CreateWebLayerSDDraft(map_or_layers=arcpro_map,
+                                       out_sddraft=sd_draft_filename,
+                                       service_name=myvars.SD_FEATURE_SERVICE_NAME.value,
+                                       server_type="MY_HOSTED_SERVICES",
+                                       service_type="FEATURE_ACCESS",
+                                       folder_name="MD Elect",
+                                       overwrite_existing_service=True,
+                                       copy_data_to_server=True,
+                                       enable_editing=False,
+                                       allow_exporting=False,
+                                       enable_sync=False,
+                                       summary=None,
+                                       tags=None,
+                                       description=None,
+                                       credits=None,
+                                       use_limitations=None)
+        arcpy.StageService_server(in_service_definition_draft=sd_draft_filename,
+                                  out_service_definition=sd_filename)
+    except RuntimeError as rte:
+        print(f"NOTE: Could be that ArcPro sign-in session has expired. Open Pro and sign in as mdimapdatacatalog ... "
+              f"{rte}")
+        exit()
 
     # Need connection with AGOL
     gis = GIS(url=myvars.ARCGIS_ONLINE_PORTAL.value,
