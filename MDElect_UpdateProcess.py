@@ -95,16 +95,25 @@ def main():
     # PART 2 - Need to access feature class and update using data from in-memory database master query results from Step 1
     #___________________________________________
 
+    # Need credentials from config file
+    config = configparser.ConfigParser()
+    config.read(filenames=myvars.CREDENTIALS_PATH.value)
+    agol_username = config['DEFAULT']["username"]
+    agol_password = config['DEFAULT']["password"]
+
     # SPATIAL
-    # Need access to the feature class
     import arcpy        # Delayed import for performance
 
+    # Need to sign in to portal so Pro can write to agol
+    maryland_portal = arcpy.SignInToPortal("https://maryland.maps.arcgis.com", agol_username, agol_password)
+    active_portal = arcpy.GetActivePortalURL()
+    print(f"Signed in to {active_portal}")
     # ArcInfo must be available for arcpy.mp.CreateWebLayerSDDraft and other processes to run
     print("ArcPro ArcInfo License Availability...")
     license_avail_arcinfo = arcpy.CheckProduct('arcinfo')
     if license_avail_arcinfo == "Available":
         print(f"Required license available.\n"
-              f"arcpy.CheckProduct('arcinfo') returned {license_avail_arcinfo}\n"
+              f"\tarcpy.CheckProduct('arcinfo') returned {license_avail_arcinfo}\n"
               )
     else:
         install_info = arcpy.GetInstallInfo(product=None)
@@ -159,12 +168,6 @@ def main():
     #___________________________________________
 
     from arcgis.gis import GIS          # Delayed import for performance
-
-    # Need credentials from config file
-    config = configparser.ConfigParser()
-    config.read(filenames=myvars.CREDENTIALS_PATH.value)
-    agol_username = config['DEFAULT']["username"]
-    agol_password = config['DEFAULT']["password"]
 
     # Need a new SDDraft and to stage it to SD
     arcpy.env.overwriteOutput = True
