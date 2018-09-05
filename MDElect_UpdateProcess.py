@@ -105,7 +105,7 @@ def main():
     import arcpy        # Delayed import for performance
 
     # Need to sign in to portal so Pro can write to agol
-    maryland_portal = arcpy.SignInToPortal("https://maryland.maps.arcgis.com", agol_username, agol_password)
+    maryland_portal = arcpy.SignInToPortal(myvars.ARCGIS_ONLINE_PORTAL.value, agol_username, agol_password)
     active_portal = arcpy.GetActivePortalURL()
     print(f"Signed in to {active_portal}")
     # ArcInfo must be available for arcpy.mp.CreateWebLayerSDDraft and other processes to run
