@@ -18,11 +18,12 @@ Revision: 20180905, NOTE: If encounter the following error:
     'Traceback: in CreateWebLayerSDDraft return _convertArcObjectToPythonObject(...) RuntimeError'
     it appears to be that the ArcPro session login has expired. Despite the credentials being available for login it
     looks like ArcPro must be opened, sign-in must be completed, and the sign-in must be valid when the process is run.
-    ArcPro does not need to be open when the process is run; Just the login must be valid.
+    ArcPro does not need to be open when the process is run; Just the login must be valid. CJuice
+Revision: 20180905, Added functionality to sign in to portal and check for the arcinfo level license availability to avoid
+    previous runtime errors. CJuice
+Revision:
 """
 # TODO: weakness/pain point, when need to add/revise/delete field etc you have to manually change in multiple spots. Make code more flexible to solve this issue.
-
-# TODO: Test to see if this works after undergoing the overhaull and redesign
 
 
 def main():
@@ -105,9 +106,10 @@ def main():
     import arcpy        # Delayed import for performance
 
     # Need to sign in to portal so Pro can write to agol
-    maryland_portal = arcpy.SignInToPortal(myvars.ARCGIS_ONLINE_PORTAL.value, agol_username, agol_password)
+    _ = arcpy.SignInToPortal(myvars.ARCGIS_ONLINE_PORTAL.value, agol_username, agol_password)
     active_portal = arcpy.GetActivePortalURL()
     print(f"Signed in to {active_portal}")
+
     # ArcInfo must be available for arcpy.mp.CreateWebLayerSDDraft and other processes to run
     print("ArcPro ArcInfo License Availability...")
     license_avail_arcinfo = arcpy.CheckProduct('arcinfo')
@@ -133,7 +135,7 @@ def main():
     fc_fields = arcpy.ListFields(myvars.FC_NAME.value)
     fc_field_names_list = [field.name.strip() for field in fc_fields]
 
-    # Need to reverse the header mapping between gis data and csv data. Originally created opposite to end need, meh.
+    # Need to reverse the header mapping between gis data and csv data. Originally designed opposite to end need, meh.
     fc_field_names_to_csv_headers_dict = mdcls.Util_Class.reverse_dictionary(
         myvars.csv_headers_to_agol_fc_field_names_dict)
 
