@@ -215,11 +215,11 @@ def main():
     # Find the existingSD, update it, publish to overwrite and set sharing and metadata.
     # Must be owned by the account whose credentials this process uses, and named the same
     try:
-        ##        See https://community.esri.com/thread/166663
-        ##        agol_sd_item = gis.content.search(query="{} AND owner:{}".format(SD_FEATURE_SERVICE_NAME.value, agol_username),
-        ##                                          item_type="Service Definition")[0]
+        # See https://community.esri.com/thread/166663
+        # agol_sd_item = gis.content.search(query="{} AND owner:{}".format(SD_FEATURE_SERVICE_NAME.value, agol_username),
+        # item_type="Service Definition")[0]
         # agol_sd_item = gis.content.search(query="{} AND owner:{}".format(myvars.SD_FEATURE_SERVICE_NAME.value, agol_username),
-        #                                   item_type="Service Definition")[0]
+        # item_type="Service Definition")[0]
 
         agol_sd_items = gis.content.search(query="title:{} AND owner:{}".format(myvars.SD_FEATURE_SERVICE_NAME.value,
                                                                                 agol_username),
