@@ -9,7 +9,8 @@ feature classes. The attributes are the only aspect updated. The geometries are 
 two feature classes to be updated. These are the Maryland and the US Government election boundaries.
 Date: 20180815
 Author: CJuice
-Revisions:
+Revisions: NOTE: Commas entered into the data in the spreadsheet will cause parts of this process to fail. Names
+containing Jr. and Sr. must remain comma free.
 """
 
 

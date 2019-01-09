@@ -316,7 +316,7 @@ class Util_Class():
         for line in line_generator:
             line = line.strip()
             line_list = line.split(delimeter)
-            data_dict = dict(zip(headers_list,line_list))   # first line through will produce empty dictionary
+            data_dict = dict(zip(headers_list, line_list))   # first line through will produce empty dictionary
             if i > 0:
                 new_obj = object_type(data_dict)
                 objects_list.append(new_obj)
