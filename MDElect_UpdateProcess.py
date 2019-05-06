@@ -183,7 +183,7 @@ def main():
                                        service_name=myvars.SD_FEATURE_SERVICE_NAME.value,
                                        server_type="MY_HOSTED_SERVICES",
                                        service_type="FEATURE_ACCESS",
-                                       folder_name="MD Elect",
+                                       folder_name="MD_Elect",  # NOTE: On 20190503 had to replace " " with "_" in name
                                        overwrite_existing_service=True,
                                        copy_data_to_server=True,
                                        enable_editing=False,
@@ -195,8 +195,8 @@ def main():
                                        credits=None,
                                        use_limitations=None)
     except RuntimeError as rte:
-        print(f"{rte}")
-        exit()
+        print(f"Runtime Error: {rte}")
+        exit(1)
     else:
         arcpy.StageService_server(in_service_definition_draft=sd_draft_filename,
                                   out_service_definition=sd_filename)
