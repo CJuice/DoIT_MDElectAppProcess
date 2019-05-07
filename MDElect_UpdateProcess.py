@@ -35,8 +35,8 @@ def main():
 
     class_types_namedtuples_list = [mdcls.Bridge_Class, mdcls.MDGov_Class, mdcls.USGov_Class]
     csv_paths_namedtuples_list = [myvars.CSV_PATH_BRIDGE, myvars.CSV_PATH_MDGOV, myvars.CSV_PATH_USGOV]
-    sd_draft_filename = os.path.join(myvars.SD_FILE_STORAGE_LOCATION.value, myvars.SD_FILENAME_DRAFT.value)
-    sd_filename = os.path.join(myvars.SD_FILE_STORAGE_LOCATION.value, myvars.SD_FILENAME.value)
+    sd_draft_filename = os.path.join(myvars.SD_FILE_STORAGE_LOCATION, myvars.SD_FILENAME_DRAFT)
+    sd_filename = os.path.join(myvars.SD_FILE_STORAGE_LOCATION, myvars.SD_FILENAME)
     share_everyone = False
     share_groups = ""
     share_organization = False
@@ -48,13 +48,13 @@ def main():
 
     # FUNCTIONALITY
     #   Assert that core files are present.
-    assert os.path.exists(myvars.ARCPRO_PROJECT_PATH.value)
-    assert os.path.exists(myvars.CREDENTIALS_PATH.value)
-    assert os.path.exists(myvars.CSV_PATH_BRIDGE.value)
-    assert os.path.exists(myvars.CSV_PATH_MDGOV.value)
-    assert os.path.exists(myvars.CSV_PATH_USGOV.value)
-    assert os.path.exists(myvars.GDB_PATH_ARCPRO_PROJECT.value)
-    assert os.path.exists(myvars.SD_FILE_STORAGE_LOCATION.value)
+    assert os.path.exists(myvars.ARCPRO_PROJECT_PATH)
+    assert os.path.exists(myvars.CREDENTIALS_PATH)
+    assert os.path.exists(myvars.CSV_PATH_BRIDGE)
+    assert os.path.exists(myvars.CSV_PATH_MDGOV)
+    assert os.path.exists(myvars.CSV_PATH_USGOV)
+    assert os.path.exists(myvars.GDB_PATH_ARCPRO_PROJECT)
+    assert os.path.exists(myvars.SD_FILE_STORAGE_LOCATION)
 
     # ___________________________________________
     # PART 1 - Need to build in-memory sqlite3 database and populate from csv files
@@ -63,11 +63,11 @@ def main():
     conn = mdcls.Util_Class.create_database_connection(":memory:")
     curs = mdcls.Util_Class.create_database_cursor(conn)
     for sql_namedtuple in sql_create_namedtuples_list:
-        mdcls.Util_Class.execute_sql_command(cursor=curs, sql_command=sql_namedtuple.value)
+        mdcls.Util_Class.execute_sql_command(cursor=curs, sql_command=sql_namedtuple)
 
     # Need to access CSVs, work on each one storing contents as objects and writing to database
     for csv_path_namedtuple in csv_paths_namedtuples_list:
-        with open(csv_path_namedtuple.value, 'r') as csv_file_handler:
+        with open(csv_path_namedtuple, 'r') as csv_file_handler:
             records_list_list = [(mdcls.Util_Class.clean_and_split(line=line)) for line in csv_file_handler]
 
         # Need the headers from csv. Remove them from list so don't have to skip that row in the for loop below
@@ -81,11 +81,11 @@ def main():
             # Need to get the appropriate insert sql statement and write CSV's to appropriate database table
             insert_sql_namedtuple = csvobj_sqlinsertobj_pairing[csv_path_namedtuple]
             mdcls.Util_Class.execute_sql_command(cursor=curs,
-                                                 sql_command=insert_sql_namedtuple.value,
+                                                 sql_command=insert_sql_namedtuple,
                                                  parameters_sequence=data_object.__dict__)
 
     # Need to make call to database to join tables and create one master dataset for overwrite/upload use
-    query_results = mdcls.Util_Class.execute_sql_command(cursor=curs,sql_command=myvars.SQL_SELECT_OUTPUT_DATA.value)
+    query_results = mdcls.Util_Class.execute_sql_command(cursor=curs,sql_command=myvars.SQL_SELECT_OUTPUT_DATA)
     full_data_dictionary_from_csv_data = {row[-1] : tuple(row) for row in query_results}
 
     # SQL Commit and Close out
@@ -98,7 +98,7 @@ def main():
 
     # Need credentials from config file
     config = configparser.ConfigParser()
-    config.read(filenames=myvars.CREDENTIALS_PATH.value)
+    config.read(filenames=myvars.CREDENTIALS_PATH)
     agol_username = config['DEFAULT']["username"]
     agol_password = config['DEFAULT']["password"]
 
@@ -106,7 +106,7 @@ def main():
     import arcpy        # Delayed import for performance
 
     # Need to sign in to portal so Pro can write to agol
-    _ = arcpy.SignInToPortal(myvars.ARCGIS_ONLINE_PORTAL.value, agol_username, agol_password)
+    _ = arcpy.SignInToPortal(myvars.ARCGIS_ONLINE_PORTAL, agol_username, agol_password)
     active_portal = arcpy.GetActivePortalURL()
     print(f"Signed in to {active_portal}")
 
@@ -129,10 +129,10 @@ def main():
               )
         exit()
 
-    arcpy.env.workspace = myvars.GDB_PATH_ARCPRO_PROJECT.value
+    arcpy.env.workspace = myvars.GDB_PATH_ARCPRO_PROJECT
 
     # Need the fc field names
-    fc_fields = arcpy.ListFields(myvars.FC_NAME.value)
+    fc_fields = arcpy.ListFields(myvars.FC_NAME)
     fc_field_names_list = [field.name.strip() for field in fc_fields]
 
     # Need to reverse the header mapping between gis data and csv data. Originally designed opposite to end need, meh.
@@ -150,7 +150,7 @@ def main():
         dict(enumerate(fc_field_names_matching_header_list)))
 
     # Need to step through every feature class row and update the data with data from csv.
-    with arcpy.da.UpdateCursor(in_table=myvars.FC_NAME.value, field_names=fc_field_names_matching_header_list) as update_cursor:
+    with arcpy.da.UpdateCursor(in_table=myvars.FC_NAME, field_names=fc_field_names_matching_header_list) as update_cursor:
         for row in update_cursor:
 
             # Use header index dictionary to supply index position of row_id in modified pull (no spatial fields)
@@ -173,14 +173,14 @@ def main():
 
     # Need a new SDDraft and to stage it to SD
     arcpy.env.overwriteOutput = True
-    arcpro_project = arcpy.mp.ArcGISProject(aprx_path=myvars.ARCPRO_PROJECT_PATH.value)
+    arcpro_project = arcpy.mp.ArcGISProject(aprx_path=myvars.ARCPRO_PROJECT_PATH)
 
     # Note: keep pro project simple, have only one map in aprx. Process grabs first map.
     arcpro_map = arcpro_project.listMaps()[0]
     try:
         arcpy.mp.CreateWebLayerSDDraft(map_or_layers=arcpro_map,
                                        out_sddraft=sd_draft_filename,
-                                       service_name=myvars.SD_FEATURE_SERVICE_NAME.value,
+                                       service_name=myvars.SD_FEATURE_SERVICE_NAME,
                                        server_type="MY_HOSTED_SERVICES",
                                        service_type="FEATURE_ACCESS",
                                        folder_name="MD_Elect",  # NOTE: On 20190503 had to replace " " with "_" in name
@@ -202,7 +202,7 @@ def main():
                                   out_service_definition=sd_filename)
 
     # Need connection with AGOL
-    gis = GIS(url=myvars.ARCGIS_ONLINE_PORTAL.value,
+    gis = GIS(url=myvars.ARCGIS_ONLINE_PORTAL,
               username=agol_username,
               password=agol_password,
               key_file=None,
@@ -216,12 +216,12 @@ def main():
     # Must be owned by the account whose credentials this process uses, and named the same
     try:
         # See https://community.esri.com/thread/166663
-        # agol_sd_item = gis.content.search(query="{} AND owner:{}".format(SD_FEATURE_SERVICE_NAME.value, agol_username),
+        # agol_sd_item = gis.content.search(query="{} AND owner:{}".format(SD_FEATURE_SERVICE_NAME, agol_username),
         # item_type="Service Definition")[0]
-        # agol_sd_item = gis.content.search(query="{} AND owner:{}".format(myvars.SD_FEATURE_SERVICE_NAME.value, agol_username),
+        # agol_sd_item = gis.content.search(query="{} AND owner:{}".format(myvars.SD_FEATURE_SERVICE_NAME, agol_username),
         # item_type="Service Definition")[0]
 
-        agol_sd_items = gis.content.search(query="title:{} AND owner:{}".format(myvars.SD_FEATURE_SERVICE_NAME.value,
+        agol_sd_items = gis.content.search(query="title:{} AND owner:{}".format(myvars.SD_FEATURE_SERVICE_NAME,
                                                                                 agol_username),
                                            item_type="Service Definition")
         print(agol_sd_items)
@@ -229,7 +229,7 @@ def main():
             important_message_on_searching = """The query results for {} returned more than one layer (len = {}). We discovered
              that if you don't specify 'title:' in the query then searching for Elected_Officials returns both 
              ElectedOfficials and Elected_Officials. The blog example had us taking the zeroith index and 
-             the value in zero was ElectedOfficals, which was incorrect.""".format(myvars.SD_FEATURE_SERVICE_NAME.value,
+             the value in zero was ElectedOfficals, which was incorrect.""".format(myvars.SD_FEATURE_SERVICE_NAME,
                                                                                    len(agol_sd_items))
             print(important_message_on_searching)
             raise Exception
@@ -239,7 +239,7 @@ def main():
         print("FoundSD: {}, ID: {} Uploading and overwriting…".format(agol_sd_item.title, agol_sd_item.id))
 
         # After encountered error when deployed to server, found https://community.esri.com/thread/166663
-        # agol_sd_item = gis.content.search(query="title:" + SD_FEATURE_SERVICE_NAME.value + " AND owner: " + agol_username,
+        # agol_sd_item = gis.content.search(query="title:" + SD_FEATURE_SERVICE_NAME + " AND owner: " + agol_username,
         #                                   item_type="Service Definition")[0]
     except:
         print(
