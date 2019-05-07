@@ -44,8 +44,8 @@ SD_FILE_STORAGE_LOCATION = os.path.join(_ROOT_PROJECT_PATH, r"Docs\sd_file_stora
 # SD_FILE_STORAGE_LOCATION = os.path.join(_ROOT_PROJECT_PATH, r"sd_file_storage")    # PRODUCTION
 SD_FILENAME = "Elected_Officals.sd"
 SD_FILENAME_DRAFT = "Elected_Officals.sddraft"
-SDE_CONNECTION_FILE = os.path.join(_ROOT_PROJECT_PATH, r"Docs\SDE_CONNECTION_FILE\Staging on gis-db-imap01p.sde")                                    # STAGING
-# SDE_CONNECTION_FILE = os.path.join(_ROOT_PROJECT_PATH, r"Docs\SDE_CONNECTION_FILE\Production as sde on gis-ags-imap01p.mdgov.maryland.gov.sde")       # PRODUCTION
+SDE_CONNECTION_FILE = os.path.join(_ROOT_PROJECT_PATH, r"Docs\SDE_CONNECTION_FILE\Staging on gis-db-imap01p.sde")  # STAGING
+# SDE_CONNECTION_FILE = os.path.join(_ROOT_PROJECT_PATH, r"Docs\SDE_CONNECTION_FILE\Production as sde on gis-ags-imap01p.mdgov.maryland.gov.sde") # PRODUCTION
 SQL_CREATE_BRIDGE = """CREATE TABLE BRIDGE (Row_ID text primary key, MD_District text, US_District text)"""
 SQL_CREATE_MDGOV = """CREATE TABLE MDGOV (
                     MD_District text primary key,
