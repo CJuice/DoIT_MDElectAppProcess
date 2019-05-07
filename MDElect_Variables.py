@@ -23,7 +23,8 @@ def go_up_one_directory_level():
 # VARIABLES - CONSTANTS
 _ROOT_PROJECT_PATH = os.path.dirname(__file__)
 ARCGIS_ONLINE_PORTAL = r"https://maryland.maps.arcgis.com"
-ARCPRO_PROJECT_PATH = os.path.join(_ROOT_PROJECT_PATH, r"Docs\ElectedOfficals\ElectedOfficals.aprx")
+# ARCPRO_PROJECT_PATH = os.path.join(_ROOT_PROJECT_PATH, r"ElectedOfficals\ElectedOfficals.aprx")    # PRODUCTION
+ARCPRO_PROJECT_PATH = os.path.join(_ROOT_PROJECT_PATH, r"Docs\ElectedOfficals\ElectedOfficals.aprx")    # TESTING
 CREDENTIALS_PATH = os.path.join(_ROOT_PROJECT_PATH, r"Docs\credentials.cfg")
 # CSV_DIRECTORY_PATH_IN_PRODUCTION = go_up_one_directory_level()                                      # PRODUCTION
 CSV_PATH_BRIDGE = os.path.join(_ROOT_PROJECT_PATH, r"Docs\20180613_Bridge.csv")
@@ -34,11 +35,13 @@ CSV_PATH_USGOV = os.path.join(_ROOT_PROJECT_PATH, r"Docs\20190507_USGovernment.c
 FC_NAME = "ElectedOfficials"
 FEATURE_DATASET_NAME_SDE = "Staging.SDE.Boundaries_MD_ElectionBoundaries"          # STAGING
 # FEATURE_DATASET_NAME_SDE = "Production.SDE.Boundaries_MD_ElectionBoundaries"        # PRODUCTION
-GDB_PATH_ARCPRO_PROJECT = os.path.join(_ROOT_PROJECT_PATH, r"Docs\ElectedOfficals\ElectedOfficals.gdb")
+# GDB_PATH_ARCPRO_PROJECT = os.path.join(_ROOT_PROJECT_PATH, r"ElectedOfficals\ElectedOfficals.gdb")  # PRODUCTION
+GDB_PATH_ARCPRO_PROJECT = os.path.join(_ROOT_PROJECT_PATH, r"Docs\ElectedOfficals\ElectedOfficals.gdb") # TESTING
 MD_DISTRICTS_SDE_FC_NAME = "Staging.SDE.BNDY_LegislativeDistricts2012_MDP"         # STAGING
 # MD_DISTRICTS_SDE_FC_NAME = "Production.SDE.BNDY_LegislativeDistricts2012_MDP"       # PRODUCTION
 SD_FEATURE_SERVICE_NAME = "Elected_Officials"   # SD = Service Definition
-SD_FILE_STORAGE_LOCATION = os.path.join(_ROOT_PROJECT_PATH, r"Docs\sd_file_storage")
+SD_FILE_STORAGE_LOCATION = os.path.join(_ROOT_PROJECT_PATH, r"Docs\sd_file_storage")    # TESTING
+# SD_FILE_STORAGE_LOCATION = os.path.join(_ROOT_PROJECT_PATH, r"sd_file_storage")    # PRODUCTION
 SD_FILENAME = "Elected_Officals.sd"
 SD_FILENAME_DRAFT = "Elected_Officals.sddraft"
 SDE_CONNECTION_FILE = os.path.join(_ROOT_PROJECT_PATH, r"Docs\SDE_CONNECTION_FILE\Staging on gis-db-imap01p.sde")                                    # STAGING
