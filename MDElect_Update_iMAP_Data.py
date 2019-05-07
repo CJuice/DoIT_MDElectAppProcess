@@ -28,10 +28,10 @@ def main():
     #   access the csv files generated from the google spreadsheet with tabs of US and Maryland election data
     #   make data in csv files available in a memory efficient way
     #   create data object appropriate to data source (md/us) and store in list
-    md_data_objects = mycls.Util_Class.process_csv_data_to_objects(csv_path=myvars.CSV_PATH_MDGOV,
-                                                                   object_type=mycls.MD_Data_Class)
-    us_data_objects = mycls.Util_Class.process_csv_data_to_objects(csv_path=myvars.CSV_PATH_USGOV,
-                                                                   object_type=mycls.US_Data_Class)
+    md_data_objects = mycls.UtilClass.process_csv_data_to_objects(csv_path=myvars.CSV_PATH_MDGOV,
+                                                                  object_type=mycls.MDDataClass)
+    us_data_objects = mycls.UtilClass.process_csv_data_to_objects(csv_path=myvars.CSV_PATH_USGOV,
+                                                                  object_type=mycls.USDataClass)
     md_district_ID_to_data_object_dict = {data_object.district: data_object for data_object in md_data_objects}
     us_district_ID_to_data_object_dict = {data_object.district: data_object for data_object in us_data_objects}
 
@@ -41,9 +41,9 @@ def main():
     arcpy.env.overwriteOutput = True
 
     #   Set GIS workspace
-    districts_fd = mycls.Util_Class.clean_url_slashes(url=os.path.join(myvars._ROOT_PROJECT_PATH,
-                                                                       myvars.SDE_CONNECTION_FILE,
-                                                                       myvars.FEATURE_DATASET_NAME_SDE))
+    districts_fd = mycls.UtilClass.clean_url_slashes(url=os.path.join(myvars._ROOT_PROJECT_PATH,
+                                                                      myvars.SDE_CONNECTION_FILE,
+                                                                      myvars.FEATURE_DATASET_NAME_SDE))
     arcpy.env.workspace = districts_fd
 
     #   access the sde feature class to be updated and inventory field names. Store names for use after stripping
@@ -56,14 +56,14 @@ def main():
     us_current_district_index = us_sde_fc_field_names.index("DISTRICT")
 
     #   update each feature class
-    mycls.Util_Class.update_sde_feature_class(in_table=myvars.MD_DISTRICTS_SDE_FC_NAME,
-                                              field_names=myvars.md_sde_fc_districts_field_list,
-                                              current_district_index=md_current_district_index,
-                                              district_info_dict=md_district_ID_to_data_object_dict)
-    mycls.Util_Class.update_sde_feature_class(in_table=myvars.US_DISTRICTS_SDE_FC_NAME,
-                                              field_names=myvars.us_sde_fc_districts_field_list,
-                                              current_district_index=us_current_district_index,
-                                              district_info_dict=us_district_ID_to_data_object_dict)
+    mycls.UtilClass.update_sde_feature_class(in_table=myvars.MD_DISTRICTS_SDE_FC_NAME,
+                                             field_names=myvars.md_sde_fc_districts_field_list,
+                                             current_district_index=md_current_district_index,
+                                             district_info_dict=md_district_ID_to_data_object_dict)
+    mycls.UtilClass.update_sde_feature_class(in_table=myvars.US_DISTRICTS_SDE_FC_NAME,
+                                             field_names=myvars.us_sde_fc_districts_field_list,
+                                             current_district_index=us_current_district_index,
+                                             district_info_dict=us_district_ID_to_data_object_dict)
 
 
 if __name__ == "__main__":

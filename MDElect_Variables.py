@@ -7,7 +7,6 @@ Date: 20180815
 Author: CJuice
 """
 
-# from collections import namedtuple
 import os
 
 
@@ -21,18 +20,16 @@ def go_up_one_directory_level():
     return os.path.abspath(os.curdir)
 
 
-# CONSTANT = namedtuple("CONSTANT", ["value"])
-
 # VARIABLES - CONSTANTS
 _ROOT_PROJECT_PATH = os.path.dirname(__file__)
 ARCGIS_ONLINE_PORTAL = r"https://maryland.maps.arcgis.com"
 ARCPRO_PROJECT_PATH = os.path.join(_ROOT_PROJECT_PATH, r"Docs\ElectedOfficals\ElectedOfficals.aprx")
 CREDENTIALS_PATH = os.path.join(_ROOT_PROJECT_PATH, r"Docs\credentials.cfg")
-# CSV_DIRECTORY_PATH_IN_PRODUCTION = go_up_one_directory_level())                                      # PRODUCTION
+# CSV_DIRECTORY_PATH_IN_PRODUCTION = go_up_one_directory_level()                                      # PRODUCTION
 CSV_PATH_BRIDGE = os.path.join(_ROOT_PROJECT_PATH, r"Docs\20180613_Bridge.csv")
-CSV_PATH_MDGOV = os.path.join(_ROOT_PROJECT_PATH, r"Docs\20190503_MarylandGovernment.csv")    # TESTING
+CSV_PATH_MDGOV = os.path.join(_ROOT_PROJECT_PATH, r"Docs\20190507_MarylandGovernment.csv")    # TESTING
 # CSV_PATH_MDGOV = os.path.join(CSV_DIRECTORY_PATH_IN_PRODUCTION, r"MarylandGovernment.csv")    # PRODUCTION
-CSV_PATH_USGOV = os.path.join(_ROOT_PROJECT_PATH, r"Docs\20190503_USGovernment.csv")          # TESTING
+CSV_PATH_USGOV = os.path.join(_ROOT_PROJECT_PATH, r"Docs\20190507_USGovernment.csv")          # TESTING
 # CSV_PATH_USGOV = os.path.join(CSV_DIRECTORY_PATH_IN_PRODUCTION, r"USGovernment.csv")          # PRODUCTION
 FC_NAME = "ElectedOfficials"
 FEATURE_DATASET_NAME_SDE = "Staging.SDE.Boundaries_MD_ElectionBoundaries"          # STAGING
@@ -45,7 +42,7 @@ SD_FILE_STORAGE_LOCATION = os.path.join(_ROOT_PROJECT_PATH, r"Docs\sd_file_stora
 SD_FILENAME = "Elected_Officals.sd"
 SD_FILENAME_DRAFT = "Elected_Officals.sddraft"
 SDE_CONNECTION_FILE = os.path.join(_ROOT_PROJECT_PATH, r"Docs\SDE_CONNECTION_FILE\Staging on gis-db-imap01p.sde")                                    # STAGING
-# SDE_CONNECTION_FILE = os.path.join(_ROOT_PROJECT_PATH, r"Docs\SDE_CONNECTION_FILE\Production as sde on gis-ags-imap01p.mdgov.maryland.gov.sde"))       # PRODUCTION
+# SDE_CONNECTION_FILE = os.path.join(_ROOT_PROJECT_PATH, r"Docs\SDE_CONNECTION_FILE\Production as sde on gis-ags-imap01p.mdgov.maryland.gov.sde")       # PRODUCTION
 SQL_CREATE_BRIDGE = """CREATE TABLE BRIDGE (Row_ID text primary key, MD_District text, US_District text)"""
 SQL_CREATE_MDGOV = """CREATE TABLE MDGOV (
                     MD_District text primary key,

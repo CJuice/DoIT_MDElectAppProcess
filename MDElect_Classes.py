@@ -13,7 +13,7 @@ Author: CJuice
 """
 
 
-class Bridge_Class():
+class BridgeClass:
     """
     Bridge table object between US Districts and MD Districts.
     Created because a many-to-many relationship exists.
@@ -30,7 +30,7 @@ class Bridge_Class():
         self.us_district = data_dict["US_District"]
 
 
-class Data_Class():
+class DataClass:
     """
     Parent class for csv based data objects for use in updating SDE feature classes.
     """
@@ -55,7 +55,7 @@ class Data_Class():
         self.senator_1_party = sen_1_party
 
 
-class MDGov_Class():
+class MDGovClass:
     """
     MD Government specific elected officials data object.
     """
@@ -89,7 +89,7 @@ class MDGov_Class():
         self.comptroller_maryland_manual_online = data_dict["Comptroller_Maryland_Manual_Online"]
 
 
-class MD_Data_Class(Data_Class):
+class MDDataClass(DataClass):
     """
     MD specific data object class; child class of Data_Class
     """
@@ -127,7 +127,7 @@ class MD_Data_Class(Data_Class):
         return tuple(ordered_values_for_printing)
 
 
-class USGov_Class():
+class USGovClass:
     """
     US Government specific elected officials data object for step 1 process.
     """
@@ -152,7 +152,7 @@ class USGov_Class():
         self.us_representatives_maryland_manual_online = data_dict["US_Representatives_Maryland_Manual_Online"]
 
 
-class US_Data_Class(Data_Class):
+class USDataClass(DataClass):
     """
     US Government specific data object for step 2 process.
     """
@@ -175,7 +175,7 @@ class US_Data_Class(Data_Class):
                          sen_1=data_dict["US_Senator_1"],
                          sen_1_manual=data_dict["US_Senator_1_Maryland_Manual_Online"],
                          sen_1_party=data_dict["US_Senator_1_Party"])
-        US_Data_Class.check_district_value(self)
+        USDataClass.check_district_value(self)
 
     def __str__(self):
         """
@@ -203,7 +203,7 @@ class US_Data_Class(Data_Class):
             self.district = f"0{self.district}"
 
 
-class Util_Class():
+class UtilClass:
     """
     Utility methods to be referenced statically and used by both steps.
     """
@@ -311,7 +311,7 @@ class Util_Class():
         """
         headers_list = []
         i = 0
-        line_generator = Util_Class.create_file_generator(csv_path)
+        line_generator = UtilClass.create_file_generator(csv_path)
         objects_list = []
         for line in line_generator:
             line = line.strip()
